@@ -1,10 +1,22 @@
+#
+# Unneeded Codeigniter Core Files
+#
 system/cache/*
 system/codeigniter/*
 system/database/*
-system/fotns/*
+system/fonts/*
 system/helpers/*
 system/language/*
 system/libraries/*
 system/logs/*
 system/plugins/*
 system/scaffolding/*
+
+#
+# Unneeded Application Structure
+#
+system/application/errors/*
+system/application/helpers/*
+system/application/hooks/*
+system/application/language/*
+system/application/models/*
