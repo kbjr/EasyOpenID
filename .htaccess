@@ -1,0 +1,11 @@
+#
+# .htaccess
+#
+# This file contains directory specific configuration
+# information for Apache
+#
+
+# use mod_rewrite to silently redirect
+RewriteEngine on
+RewriteCond $1 !^(index\.php)
+RewriteRule ^(.*)$ index.php/$1 [L]
