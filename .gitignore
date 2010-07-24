@@ -1,0 +1,10 @@
+system/cache/*
+system/codeigniter/*
+system/database/*
+system/fotns/*
+system/helpers/*
+system/language/*
+system/libraries/*
+system/logs/*
+system/plugins/*
+system/scaffolding/*
