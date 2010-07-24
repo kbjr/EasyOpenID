@@ -47,7 +47,6 @@ class OpenID {
 	{
 		if (self::$CI === null)
 			self::$CI =& get_instance();
-		self::do_includes();
 	}
 	
 	protected static function do_includes()
@@ -95,6 +94,7 @@ class OpenID {
 		self::class_init();
 		$this->ci =& self::$CI;
 		$this->ci->config->load('openid', true);
+		self::do_includes();
 	}
 
 /*

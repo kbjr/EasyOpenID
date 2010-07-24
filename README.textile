@@ -1,0 +1,10 @@
+h1. EasyOpenID
+
+Author: James Brumond
+
+Copyright 2010 James Brumond
+Dual licensed under MIT and GPL
+
+h2. Description
+
+An easy to use OpenID library for CodeIgniter applications.
