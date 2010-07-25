@@ -52,7 +52,7 @@ global $pape_policy_uris;
     <?php if (isset($success)) { print "<div class=\"success\">$success</div>"; } ?>
 
     <div id="verify-form">
-      <form method="get" action="try_auth.php">
+      <?php echo form_open('test/try_auth'); ?>
         Identity&nbsp;URL:
         <input type="hidden" name="action" value="verify" />
         <input type="text" name="openid_identifier" value="" />

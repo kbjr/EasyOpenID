@@ -42,7 +42,7 @@ class OpenID_Database extends Auth_OpenID_DatabaseConnection {
 
 	protected $ci = null;
 
-	public function __construct()
+	public function OpenID_Database()
 	{
 		$this->ci =& get_instance();
 		$this->ci->load->database();

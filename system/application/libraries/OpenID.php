@@ -23,6 +23,27 @@
  */
 define('OPENID_DIRECTORY', dirname(__FILE__)."/php-openid/");
 
+/*
+ * No OpenID URL Given
+ *
+ * @const  OPENID_RETURN_NO_URL
+ */
+define('OPENID_RETURN_NO_URL', 10);
+
+/*
+ * Bad OpenID URL Given
+ *
+ * @const  OPENID_RETURN_BAD_URL
+ */
+define('OPENID_RETURN_BAD_URL', 20);
+
+/*
+ * Could not connect to verifying server
+ *
+ * @const  OPENID_RETURN_NO_CONNECT
+ */
+define('OPENID_RETURN_NO_CONNECT', 30);
+
 /**
  * CodeIgniter OpenID Class
  *
@@ -44,16 +65,45 @@ class OpenID {
 	protected static $CI = null;
 	
 	protected static $default_config = array(
-		'store_method' => 'file',
-		'store_path'   => '/tmp/_php_consumer_test'
+		'store_method'	   => 'file',
+		'store_path'		 => '/tmp/_php_consumer_test',
+		'associations_table' => 'oid_associations',
+		'nonces_table'	   => 'oid_nonces'
 	);
 	
+	/**
+	* Initialize the class.
+	*
+	* @access  protected
+	* @return  void
+	*/
 	protected static function class_init()
 	{
 		if (self::$CI === null)
 			self::$CI =& get_instance();
 	}
 	
+	/**
+	* Reads an item from config
+	*
+	* @access  protected
+	* @param   string   the item to read
+	* @return  mixed
+	*/
+	protected static function read_config($item)
+	{
+		$conf = self::$CI->config->item($item, 'openid');
+		$conf = ((! $conf && array_key_exists($item, self::$default_config)) ?
+			self::$default_config[$item] : $conf);
+		return $conf;
+	}
+	
+	/**
+	* Include needed files
+	*
+	* @access  protected
+	* @return  void
+	*/
 	protected static function do_includes()
 	{
 		/**
@@ -63,9 +113,8 @@ class OpenID {
 		/**
 		 * Require the needed "store" file.
 		 */
-		$store_type = self::$CI->config->item('store_method', 'openid');
-		$this->store_type = ((! $store_type) ? self::$default_config['store_method'] : $store_type);
-		switch ($this->store_type)
+		$store_type = self::read_config('store_method');
+		switch ($store_type)
 		{
 			case 'file':
 				require_once OPENID_DIRECTORY.'Auth/OpenID/FileStore.php';
@@ -85,12 +134,22 @@ class OpenID {
 		 * Require the PAPE extension module.
 		 */
 		require_once OPENID_DIRECTORY.'Auth/OpenID/PAPE.php';
+		/**
+		 * Require the session class.
+		 */
+		require_once OPENID_DIRECTORY.'EasyOpenID_Session.php';
 	}
 
 /*
  * Magic Methods
  */
 	
+	/**
+	* Constructor
+	*
+	* @access  public
+	* @return  void
+	*/
 	public function __construct()
 	{
 		self::class_init();
@@ -110,8 +169,6 @@ class OpenID {
  */
 	
 	protected $ci = null;
-	
-	protected $store_type = null;
 
 /*
  * Public Properties
@@ -123,6 +180,13 @@ class OpenID {
  * Private Methods
  */
 	
+	/**
+	* Read an item from config.
+	*
+	* @access  protected
+	* @param   string   the item to read
+	* @return  mixed
+	*/
 	protected function _read_config($item)
 	{
 		$conf = $this->ci->config->item($item, 'openid');
@@ -131,13 +195,16 @@ class OpenID {
 		return $conf;
 	}
 
-/*
- * Public Methods
- */
-	
-	public function &getStore()
+	/**
+	* Create a store object.
+	*
+	* @access  protected
+	* @return  mixed
+	*/
+	protected function &_get_store()
 	{
-		switch ($this->store_type)
+		$store_type = $this->_read_config('store_method');
+		switch ($store_type)
 		{
 			case 'file':
 				$store_path = $this->_read_config('store_path');
@@ -149,10 +216,262 @@ class OpenID {
 				$r = new Auth_OpenID_FileStore($store_path);
 			break;
 			case 'database':
-				
+				$conn = new EasyOpenID_Database();
+				$r = new Auth_OpenID_SQLStore($conn,
+					$this->_read_config('associations_table'),
+					$this->_read_config('nonces_table'));
 			break;
 		}
 		return $r;
+	}
+	
+	protected function &_get_session()
+	{
+		$r = new OpenID_Session();
+		return $r;
+	}
+
+	/**
+	* Create a consumer object.
+	*
+	* @access  protected
+	* @return  Auth_OpenID_Consumer
+	*/
+	protected function &_get_consumer()
+	{
+		$store = $this->_get_store();
+		$sess = $this->_get_session();
+		$r = new Auth_OpenID_Consumer($store, $sess);
+		return $r;
+	}
+
+	/**
+	* Create the current scheme (http or https).
+	*
+	* @access  protected
+	* @return  string
+	*/
+	protected function _get_scheme()
+	{
+		$scheme = 'http';
+		if (isset($_SERVER['HTTPS']) and $_SERVER['HTTPS'] == 'on')
+		{
+			$scheme .= 's';
+		}
+		return $scheme;
+	}
+	
+	protected function _get_trust_root()
+	{
+		return $this->ci->config->item('base_url');
+	}
+	
+	protected function _escape($str)
+	{
+		return htmlentities($str);
+	}
+	
+	protected function _get_self()
+	{
+		return $this->ci->config->item('base_url').$this->ci->uri->uri_string();
+	}
+
+/*
+ * Public Methods
+ */
+
+	public function try_auth($return_to, $openid = null, $policy_uris = array())
+	{
+		if ($return_to[0] == '/')
+			$return_to = substr($return_to, 1);
+		
+		if (! $openid)
+		{
+			if (array_key_exists('openid_identifier', $_POST))
+			{
+				$openid = $_POST['openid_identifier'];
+			}
+			else
+			{
+				return OPENID_RETURN_NO_URL;
+			}
+		}
+		
+		if (empty($openid))
+		{
+			return OPENID_RETURN_NO_URL;
+		}
+		
+		$consumer = $this->_get_consumer();
+
+		// Begin the OpenID authentication process.
+		$auth_request = $consumer->begin($openid);
+
+		// No auth request means we can't begin OpenID.
+		if (! $auth_request)
+		{
+			return OPENID_RETURN_BAD_URL;
+		}
+
+		$sreg_request = Auth_OpenID_SRegRequest::build(
+			// Required
+			array('nickname'),
+			// Optional
+			array('fullname', 'email')
+		);
+
+		if ($sreg_request)
+		{
+			$auth_request->addExtension($sreg_request);
+		}
+
+		$policy_uris = null;
+
+		$pape_request = new Auth_OpenID_PAPE_Request($policy_uris);
+		if ($pape_request)
+		{
+			$auth_request->addExtension($pape_request);
+		}
+
+		// Redirect the user to the OpenID server for authentication.
+		// Store the token for this authentication so we can verify the
+		// response.
+
+		// For OpenID 1, send a redirect.  For OpenID 2, use a Javascript
+		// form to send a POST request to the server.
+		if ($auth_request->shouldSendRedirect())
+		{
+			$redirect_url = $auth_request->redirectURL($this->_get_trust_root(), $return_to);
+
+			// If the redirect URL can't be built, display an error
+			// message.
+			if (Auth_OpenID::isFailure($redirect_url))
+			{
+				return OPENID_RETURN_NO_CONNECT;
+			}
+			else
+			{
+				// Send redirect.
+				header("Location: ".$redirect_url);
+			}
+		}
+		else
+		{
+			// Generate form markup and render it.
+			$form_id = 'openid_message';
+			$form_html = $auth_request->htmlMarkup(
+				$this->_get_trust_root(), $return_to, false, array('id' => $form_id));
+
+			// Display an error if the form markup couldn't be generated;
+			// otherwise, render the HTML.
+			if (Auth_OpenID::isFailure($form_html))
+			{
+				return OPENID_RETURN_NO_CONNECT;
+			}
+			else
+			{
+				print $form_html;
+			}
+		}
+	}
+	
+	public function finish_auth()
+	{
+		$msg = $error = $success = '';
+		$consumer = $this->_get_consumer();
+
+		// Complete the authentication process using the server's
+		// response.
+		$response = $consumer->complete($this->_get_self());
+
+		// Check the response status.
+		if ($response->status == Auth_OpenID_CANCEL)
+		{
+			// This means the authentication was cancelled.
+			$msg = 'Verification cancelled.';
+		}
+		else if ($response->status == Auth_OpenID_FAILURE)
+		{
+			// Authentication failed; display the error message.
+			$msg = "OpenID authentication failed: " . $response->message;
+		}
+		else if ($response->status == Auth_OpenID_SUCCESS)
+		{
+			// This means the authentication succeeded; extract the
+			// identity URL and Simple Registration data (if it was
+			// returned).
+			$openid = $response->getDisplayIdentifier();
+			$esc_identity = escape($openid);
+
+			$success = sprintf('You have successfully verified ' . '<a href="%s">%s</a> as your identity.',
+				$esc_identity, $esc_identity);
+
+			if ($response->endpoint->canonicalID)
+			{
+				$escaped_canonicalID = escape($response->endpoint->canonicalID);
+				$success .= '  (XRI CanonicalID: '.$escaped_canonicalID.') ';
+			}
+
+			$sreg_resp = Auth_OpenID_SRegResponse::fromSuccessResponse($response);
+
+			$sreg = $sreg_resp->contents();
+
+			if (array_key_exists('email', $sreg))
+			{
+				$success .= "  You also returned '".$this->_escape($sreg['email'])."' as your email.";
+			}
+
+			if (array_key_exists('nickname', $sreg))
+			{
+				$success .= "  Your nickname is '".$this->_escape($sreg['nickname'])."'.";
+			}
+
+			if (array_key_exists('fullname', $sreg))
+			{
+				$success .= "  Your fullname is '".$this->_escape($sreg['fullname'])."'.";
+			}
+
+			$pape_resp = Auth_OpenID_PAPE_Response::fromSuccessResponse($response);
+
+			if ($pape_resp)
+			{
+				if ($pape_resp->auth_policies)
+				{
+					$success .= "<p>The following PAPE policies affected the authentication:</p><ul>";
+
+					foreach ($pape_resp->auth_policies as $uri)
+					{
+						$escaped_uri = $this->_escape($uri);
+						$success .= "<li><tt>$escaped_uri</tt></li>";
+					}
+
+					$success .= "</ul>";
+				}
+				else
+				{
+					$success .= "<p>No PAPE policies affected the authentication.</p>";
+				}
+
+				if ($pape_resp->auth_age)
+				{
+					$age = escape($pape_resp->auth_age);
+					$success .= "<p>The authentication age returned by the " .
+						"server is: <tt>".$age."</tt></p>";
+				}
+
+				if ($pape_resp->nist_auth_level)
+				{
+					$auth_level = $this->_escape($pape_resp->nist_auth_level);
+					$success .= "<p>The NIST auth level returned by the " .
+						"server is: <tt>".$auth_level."</tt></p>";
+				}
+			}
+			else
+			{
+				$success .= "<p>No PAPE response was sent by the provider.</p>";
+			}
+		}
+		return array('msg' => $msg, 'error' => $error, 'success' => $success);
 	}
 
 }
