@@ -43,6 +43,11 @@ class OpenID {
 	
 	protected static $CI = null;
 	
+	protected static $default_config = array(
+		'store_method' => 'file',
+		'store_path'   => '/tmp/_php_consumer_test'
+	);
+	
 	protected static function class_init()
 	{
 		if (self::$CI === null)
@@ -58,18 +63,15 @@ class OpenID {
 		/**
 		 * Require the needed "store" file.
 		 */
-		switch (self::$CI->config->item('store_method', 'openid')) {
+		$store_type = self::$CI->config->item('store_method', 'openid');
+		$this->store_type = ((! $store_type) ? self::$default_config['store_method'] : $store_type);
+		switch ($this->store_type)
+		{
 			case 'file':
 				require_once OPENID_DIRECTORY.'Auth/OpenID/FileStore.php';
 			break;
-			case 'mysql':
-				require_once OPENID_DIRECTORY.'Auth/OpenID/MySQLStore.php';
-			break;
-			case 'postgresql':
-				require_once OPENID_DIRECTORY.'Auth/OpenID/PostgreSQLStore.php';
-			break;
-			case 'sqlite':
-				require_once OPENID_DIRECTORY.'Auth/OpenID/SQLiteStore.php';
+			case 'database':
+				require_once OPENID_DIRECTORY.'EasyOpenID_Database.php';
 			break;
 			default:
 				throw new Exception("OpenID store_method is invalid.");
@@ -94,7 +96,13 @@ class OpenID {
 		self::class_init();
 		$this->ci =& self::$CI;
 		$this->ci->config->load('openid', true);
+		$this->ci->load->library('session');
 		self::do_includes();
+		$this->pape_policy_uris = array(
+			PAPE_AUTH_MULTI_FACTOR_PHYSICAL,
+			PAPE_AUTH_MULTI_FACTOR,
+			PAPE_AUTH_PHISHING_RESISTANT
+		);
 	}
 
 /*
@@ -102,24 +110,50 @@ class OpenID {
  */
 	
 	protected $ci = null;
+	
+	protected $store_type = null;
 
 /*
  * Public Properties
  */
 	
-	//...
+	public $pape_policy_uris = null;
 
 /*
  * Private Methods
  */
 	
-	//...
+	protected function _read_config($item)
+	{
+		$conf = $this->ci->config->item($item, 'openid');
+		$conf = ((! $conf && array_key_exists($item, self::$default_config)) ?
+			self::$default_config[$item] : $conf);
+		return $conf;
+	}
 
 /*
  * Public Methods
  */
 	
-	//...
+	public function &getStore()
+	{
+		switch ($this->store_type)
+		{
+			case 'file':
+				$store_path = $this->_read_config('store_path');
+				if (!file_exists($store_path) && !mkdir($store_path))
+				{
+					throw new Exception("Could not create the FileStore directory '$store_path'. ".
+					" Please check the effective permissions.");
+				}
+				$r = new Auth_OpenID_FileStore($store_path);
+			break;
+			case 'database':
+				
+			break;
+		}
+		return $r;
+	}
 
 }
 
@@ -137,5 +171,5 @@ class OpenID {
 
 
 
-/* End of file CI_OpenID.php */
-/* Location: ./system/application/libraries/CI_OpenID.php */
+/* End of file OpenID.php */
+/* Location: ./system/application/libraries/OpenID.php */

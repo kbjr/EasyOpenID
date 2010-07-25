@@ -10,7 +10,7 @@ class Test extends Controller {
 	function index()
 	{
 		$this->load->library('OpenID');
-		$this->load->view('welcome_message');
+		$this->load->view('test');
 	}
 }
 

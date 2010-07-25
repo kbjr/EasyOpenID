@@ -5,12 +5,41 @@
 | Store Method
 |--------------------------------------------------------------------------
 |
-| How should data be stored? Valid values include 'file', 'mysql',
-| 'sqlite', and 'postgresql'.
+| How should data be stored? Valid values include 'file' or 'database'.
 |
 */
 $config['store_method'] = 'file';
 
+/*
+|--------------------------------------------------------------------------
+| FileStore Path
+|--------------------------------------------------------------------------
+|
+| If using file storage, where should data be stored?
+|
+*/
+$config['store_path'] = '/tmp/_php_consumer_test';
 
-/* End of file config.php */
-/* Location: ./system/application/config/config.php */
+/*
+|--------------------------------------------------------------------------
+| Associations Table
+|--------------------------------------------------------------------------
+|
+| If using database storage, the table where associations are to be stored.
+|
+*/
+$config['associations_table'] = 'oid_associations';
+
+/*
+|--------------------------------------------------------------------------
+| Nonces Table
+|--------------------------------------------------------------------------
+|
+| If using database storage, the table where nonces are to be stored.
+|
+*/
+$config['nonces_table'] = 'oid_nonces';
+
+
+/* End of file openid.php */
+/* Location: ./system/application/config/openid.php */

@@ -36,12 +36,11 @@ function doIncludes() {
 
 doIncludes();
 
-global $pape_policy_uris;
 $pape_policy_uris = array(
-			  PAPE_AUTH_MULTI_FACTOR_PHYSICAL,
-			  PAPE_AUTH_MULTI_FACTOR,
-			  PAPE_AUTH_PHISHING_RESISTANT
-			  );
+	PAPE_AUTH_MULTI_FACTOR_PHYSICAL,
+	PAPE_AUTH_MULTI_FACTOR,
+	PAPE_AUTH_PHISHING_RESISTANT
+);
 
 function &getStore() {
     /**
