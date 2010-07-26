@@ -17,7 +17,18 @@ class Test extends Controller {
 	function try_auth()
 	{
 		$policies = ((array_key_exists('policies', $_POST)) ? $_POST['policies'] : array());
-		$result = $this->openid->try_auth($_POST['openid_identifier'], 'test/finish_auth', $policies);
+		switch ($_POST['verify'])
+		{
+			case 'Verify':
+				$result = $this->openid->try_auth($_POST['openid_identifier'], 'test/finish_auth', $policies);
+			break;
+			case 'Google':
+				$result = $this->openid->try_auth_google('test/finish_auth', $policies);
+			break;
+			case 'Yahoo!':
+				$result = $this->openid->try_auth_yahoo('test/finish_auth', $policies);
+			break;
+		}
 		if (is_string($result)) echo $result;
 	}
 	

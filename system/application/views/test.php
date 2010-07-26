@@ -59,7 +59,10 @@
 				} ?>
 				</p>
 
-				<input type="submit" value="Verify" />
+				<input type="submit" name="verify" value="Verify" /><br /><br />
+				
+				<input type="submit" name="verify" value="Google" />
+				<input type="submit" name="verify" value="Yahoo!" />
 			</form>
 		</div>
 	</body>

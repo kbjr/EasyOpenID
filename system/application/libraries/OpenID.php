@@ -274,17 +274,36 @@ class OpenID {
 		}
 		return $scheme;
 	}
-	
+
+	/**
+	* Create the base url.
+	*
+	* @access  protected
+	* @return  string
+	*/
 	protected function _get_trust_root()
 	{
 		return $this->ci->config->item('base_url');
 	}
-	
+
+	/**
+	* Escape a string.
+	*
+	* @access  protected
+	* @param   string   the string to escape
+	* @return  string
+	*/
 	protected function _escape($str)
 	{
 		return htmlentities($str);
 	}
-	
+
+	/**
+	* Return a url to the current path.
+	*
+	* @access  protected
+	* @return  string
+	*/
 	protected function _get_self()
 	{
 		return $this->ci->config->item('base_url').substr($this->ci->uri->uri_string(), 1);
@@ -294,11 +313,41 @@ class OpenID {
  * Public Methods
  */
 
+	/**
+	* Try to authenticate a user on Google accounts
+	*
+	* @access  public
+	* @param   string   the path to return to after authenticating
+	* @param   array    a list of PAPE policies to request from the server
+	* @return  string
+	*/
 	public function try_auth_google($return_to, $policy_uris = array())
 	{
 		return $this->try_auth('https://www.google.com/accounts/o8/id', $return_to, $policy_uris);
 	}
 
+	/**
+	* Try to authenticate a user on Yahoo! accounts
+	*
+	* @access  public
+	* @param   string   the path to return to after authenticating
+	* @param   array    a list of PAPE policies to request from the server
+	* @return  string
+	*/
+	public function try_auth_yahoo($return_to, $policy_uris = array())
+	{
+		return $this->try_auth('https://www.yahoo.com', $return_to, $policy_uris);
+	}
+
+	/**
+	* Try to authenticate a user.
+	*
+	* @access  public
+	* @param   string   the openid url
+	* @param   string   the path to return to after authenticating
+	* @param   array    a list of PAPE policies to request from the server
+	* @return  string
+	*/
 	public function try_auth($openid, $return_to, $policy_uris = array())
 	{
 		if ($return_to[0] == '/')
@@ -382,7 +431,13 @@ class OpenID {
 			}
 		}
 	}
-	
+
+	/**
+	* Finish up authentication.
+	*
+	* @access  public
+	* @return  string
+	*/
 	public function finish_auth()
 	{
 		$msg = $error = $success = '';
