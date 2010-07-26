@@ -294,23 +294,16 @@ class OpenID {
  * Public Methods
  */
 
-	public function try_auth($return_to, $openid = null, $policy_uris = array())
+	public function try_auth_google($return_to, $policy_uris = array())
+	{
+		return $this->try_auth('https://www.google.com/accounts/o8/id', $return_to, $policy_uris);
+	}
+
+	public function try_auth($openid, $return_to, $policy_uris = array())
 	{
 		if ($return_to[0] == '/')
 			$return_to = substr($return_to, 1);
 		$return_to = $this->_get_trust_root().$return_to;
-		
-		if (! $openid)
-		{
-			if (array_key_exists('openid_identifier', $_POST))
-			{
-				$openid = $_POST['openid_identifier'];
-			}
-			else
-			{
-				return OPENID_RETURN_NO_URL;
-			}
-		}
 		
 		if (empty($openid))
 		{
