@@ -44,6 +44,20 @@ define('OPENID_RETURN_BAD_URL', 20);
  */
 define('OPENID_RETURN_NO_CONNECT', 30);
 
+/*
+ * Verification canceled
+ *
+ * @const  OPENID_RETURN_CANCEL
+ */
+define('OPENID_RETURN_CANCEL', 40);
+
+/*
+ * Verification failure
+ *
+ * @const  OPENID_RETURN_FAILURE
+ */
+define('OPENID_RETURN_FAILURE', 50);
+
 /**
  * CodeIgniter OpenID Class
  *
@@ -273,7 +287,7 @@ class OpenID {
 	
 	protected function _get_self()
 	{
-		return $this->ci->config->item('base_url').$this->ci->uri->uri_string();
+		return $this->ci->config->item('base_url').substr($this->ci->uri->uri_string(), 1);
 	}
 
 /*
@@ -284,6 +298,7 @@ class OpenID {
 	{
 		if ($return_to[0] == '/')
 			$return_to = substr($return_to, 1);
+		$return_to = $this->_get_trust_root().$return_to;
 		
 		if (! $openid)
 		{
@@ -370,7 +385,7 @@ class OpenID {
 			}
 			else
 			{
-				print $form_html;
+				return $form_html;
 			}
 		}
 	}
@@ -387,13 +402,11 @@ class OpenID {
 		// Check the response status.
 		if ($response->status == Auth_OpenID_CANCEL)
 		{
-			// This means the authentication was cancelled.
-			$msg = 'Verification cancelled.';
+			return OPENID_RETURN_CANCEL;
 		}
 		else if ($response->status == Auth_OpenID_FAILURE)
 		{
-			// Authentication failed; display the error message.
-			$msg = "OpenID authentication failed: " . $response->message;
+			return OPENID_RETURN_FAILURE;
 		}
 		else if ($response->status == Auth_OpenID_SUCCESS)
 		{
@@ -401,77 +414,16 @@ class OpenID {
 			// identity URL and Simple Registration data (if it was
 			// returned).
 			$openid = $response->getDisplayIdentifier();
-			$esc_identity = escape($openid);
-
-			$success = sprintf('You have successfully verified ' . '<a href="%s">%s</a> as your identity.',
-				$esc_identity, $esc_identity);
-
-			if ($response->endpoint->canonicalID)
-			{
-				$escaped_canonicalID = escape($response->endpoint->canonicalID);
-				$success .= '  (XRI CanonicalID: '.$escaped_canonicalID.') ';
-			}
+			$esc_identity = $this->_escape($openid);
 
 			$sreg_resp = Auth_OpenID_SRegResponse::fromSuccessResponse($response);
 
 			$sreg = $sreg_resp->contents();
 
-			if (array_key_exists('email', $sreg))
-			{
-				$success .= "  You also returned '".$this->_escape($sreg['email'])."' as your email.";
-			}
-
-			if (array_key_exists('nickname', $sreg))
-			{
-				$success .= "  Your nickname is '".$this->_escape($sreg['nickname'])."'.";
-			}
-
-			if (array_key_exists('fullname', $sreg))
-			{
-				$success .= "  Your fullname is '".$this->_escape($sreg['fullname'])."'.";
-			}
-
-			$pape_resp = Auth_OpenID_PAPE_Response::fromSuccessResponse($response);
-
-			if ($pape_resp)
-			{
-				if ($pape_resp->auth_policies)
-				{
-					$success .= "<p>The following PAPE policies affected the authentication:</p><ul>";
-
-					foreach ($pape_resp->auth_policies as $uri)
-					{
-						$escaped_uri = $this->_escape($uri);
-						$success .= "<li><tt>$escaped_uri</tt></li>";
-					}
-
-					$success .= "</ul>";
-				}
-				else
-				{
-					$success .= "<p>No PAPE policies affected the authentication.</p>";
-				}
-
-				if ($pape_resp->auth_age)
-				{
-					$age = escape($pape_resp->auth_age);
-					$success .= "<p>The authentication age returned by the " .
-						"server is: <tt>".$age."</tt></p>";
-				}
-
-				if ($pape_resp->nist_auth_level)
-				{
-					$auth_level = $this->_escape($pape_resp->nist_auth_level);
-					$success .= "<p>The NIST auth level returned by the " .
-						"server is: <tt>".$auth_level."</tt></p>";
-				}
-			}
-			else
-			{
-				$success .= "<p>No PAPE response was sent by the provider.</p>";
-			}
+			return $sreg;
 		}
-		return array('msg' => $msg, 'error' => $error, 'success' => $success);
+		
+		return OPENID_RETURN_FAILURE;
 	}
 
 }

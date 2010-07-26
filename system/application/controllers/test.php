@@ -16,12 +16,17 @@ class Test extends Controller {
 	
 	function try_auth()
 	{
-		$this->openid->try_auth('test/finish_auth', $_POST['openid_identifier'], $_POST['policies']);
+		$policies = ((array_key_exists('policies', $_POST)) ? $_POST['policies'] : array());
+		$result = $this->openid->try_auth('test/finish_auth', $_POST['openid_identifier'], $policies);
+		if (is_string($result)) echo $result;
 	}
 	
 	function finish_auth()
 	{
-		$this->openid->finish_auth();
+		$result = $this->openid->finish_auth();
+		echo '<pre>';
+		print_r($result);
+		echo '</pre>';
 	}
 
 }
