@@ -46,7 +46,7 @@ $config['nonces_table'] = 'oid_nonces';
 |--------------------------------------------------------------------------
 |
 | If using the form builder, should popup authentication be used where
-| available?
+| available? (requires the companion javascript library)
 |
 */
 $config['popup_auth'] = TRUE;
