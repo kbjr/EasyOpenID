@@ -40,6 +40,17 @@ $config['associations_table'] = 'oid_associations';
 */
 $config['nonces_table'] = 'oid_nonces';
 
+/*
+|--------------------------------------------------------------------------
+| Popup Authentication
+|--------------------------------------------------------------------------
+|
+| If using the form builder, should popup authentication be used where
+| available?
+|
+*/
+$config['popup_auth'] = TRUE;
+
 
 /* End of file openid.php */
 /* Location: ./system/application/config/openid.php */

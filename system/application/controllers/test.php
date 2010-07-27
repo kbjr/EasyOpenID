@@ -61,6 +61,12 @@ class Test extends Controller {
 		}
 		$this->load->view('test', $data);
 	}
+	
+	function build()
+	{
+		header('Content-Type: text/plain');
+		$this->openid->build_openid_auth('test/build');
+	}
 
 }
 

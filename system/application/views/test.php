@@ -5,7 +5,8 @@
 	</head>
 	<style type="text/css">
 			* {
-				font-family: verdana, sans-serif;
+				font-family: helvetica, verdana, sans-serif;
+				font-weight: 100;
 				color: #333;
 			}
 			a {

@@ -79,10 +79,11 @@ class OpenID {
 	protected static $CI = null;
 	
 	protected static $default_config = array(
-		'store_method'	   => 'file',
-		'store_path'		 => '/tmp/_php_consumer_test',
+		'store_method'       => 'file',
+		'store_path'         => '/tmp/_php_consumer_test',
 		'associations_table' => 'oid_associations',
-		'nonces_table'	   => 'oid_nonces'
+		'nonces_table'       => 'oid_nonces',
+		'popup_auth'         => TRUE
 	);
 	
 	/**
@@ -172,7 +173,7 @@ class OpenID {
 	{
 		self::class_init();
 		$this->ci =& self::$CI;
-		$this->ci->config->load('openid', true);
+		$this->ci->config->load('openid', TRUE);
 		$this->ci->load->library('session');
 		self::do_includes();
 		$this->pape_policy_uris = array(
@@ -203,6 +204,15 @@ class OpenID {
 		'http://axschema.org/namePerson/first'    => 'firstname',
 		'http://axschema.org/namePerson/last'     => 'lastname',
 		'http://axschema.org/namePerson/friendly' => 'nickname'
+	);
+	
+	protected $providers = array(
+		'openid'  => 'Sign in with OpenID',
+		'google'  => 'Sign in using your Google Account',
+		'yahoo'   => 'Sign in using Yahoo!',
+		'blogger' => 'Sign in with your Blogger Account',
+		'myspace' => 'Sign in using MySpaceID',
+		'aol'     => 'Sign in with your AOL Account'
 	);
 	
 	protected $_error = null;
@@ -499,7 +509,7 @@ class OpenID {
 			// Generate form markup and render it.
 			$form_id = 'openid_message';
 			$form_html = $auth->htmlMarkup(
-				$this->_get_trust_root(), $return_to, false, array('id' => $form_id));
+				$this->_get_trust_root(), $return_to, FALSE, array('id' => $form_id));
 
 			// Display an error if the form markup couldn't be generated;
 			// otherwise, render the HTML.
@@ -589,7 +599,7 @@ class OpenID {
 			// Generate form markup and render it.
 			$form_id = 'openid_message';
 			$form_html = $auth_request->htmlMarkup(
-				$this->_get_trust_root(), $return_to, false, array('id' => $form_id));
+				$this->_get_trust_root(), $return_to, FALSE, array('id' => $form_id));
 
 			// Display an error if the form markup couldn't be generated;
 			// otherwise, render the HTML.
@@ -661,6 +671,52 @@ class OpenID {
 		}
 		
 		return OPENID_RETURN_FAILURE;
+	}
+
+	/**
+	* Build an OpenID authentication markup.
+	*
+	* @access  public
+	* @param   string   where should the links go
+	* @param   array    a list of providers to offer
+	* @param   bool     authenticate with popups
+	* @return  string
+	*/
+	public function build_openid_auth($handler = null, $providers = array('openid', 'google', 'yahoo'), $popups = null)
+	{
+		if (! is_string($handler) || empty($handler))
+		{
+			throw new Exception('redirect url is required');
+		}
+		
+		if ($handler[0] == '/')
+		{
+			$handler = substr($handler, 1);
+		}
+		
+		if ($popups === null)
+		{
+			$popups = $this->_read_config('popup_auth');
+		}
+		$popups =!! $popups;
+		
+		$links = array();
+		foreach ($providers as $provider)
+		{
+			if (array_key_exists($provider, $this->providers))
+			{
+				$links[] = (object) array(
+					'href' => $handler.'/'.$provider,
+					'rel'  => 'openid',
+					'text' => $this->providers[$provider]
+				);
+			}
+			else
+			{
+				throw new Exception('provider "'.$provider.'" does not exist in the EasyOpenID system', E_USER_NOTICE);
+			}
+		}
+		print_r($links);
 	}
 
 }
