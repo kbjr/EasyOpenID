@@ -342,6 +342,31 @@ class OpenID {
 		return $this->ci->config->item('base_url').substr($this->ci->uri->uri_string(), 1);
 	}
 
+	/**
+	* Turns an absolute path into a URL.
+	*
+	* @access  protected
+	* @param   string   the path to convert
+	* @return  string
+	*/
+	protected function _make_url($path)
+	{
+		return ((empty($_SERVER['HTTPS'])) ? "http" : "https") . "://" .
+			$_SERVER['HTTP_HOST'] . str_replace($_SERVER['DOCUMENT_ROOT'], "", $path);
+	}
+
+	/**
+	* Creates the <img /> tag for an OpenID icon
+	*
+	* @access  protected
+	* @param   string   image url
+	* @return  string
+	*/
+	protected function _build_icon($url)
+	{
+		return '<img src="'.$url.'" alt="" title="" width="16" height="16" />';
+	}
+
 /*
  * Public Methods
  */
@@ -682,7 +707,8 @@ class OpenID {
 	* @param   bool     authenticate with popups
 	* @return  string
 	*/
-	public function build_openid_auth($handler = null, $providers = array('openid', 'google', 'yahoo'), $popups = null)
+	public function build_openid_auth($handler = null, $providers = array('openid', 'google', 'yahoo'),
+		$icon_loader = null, $popups = null)
 	{
 		if (! is_string($handler) || empty($handler))
 		{
@@ -692,6 +718,19 @@ class OpenID {
 		if ($handler[0] == '/')
 		{
 			$handler = substr($handler, 1);
+		}
+		
+		if (is_string($icon_loader))
+		{
+			if($icon_loader[0] == '/')
+			{
+				$icons = substr($icons, 1);
+			}
+			$icons = $this->_get_trust_root().$icon_loader.'/';
+		}
+		else
+		{
+			$icons = $this->_make_url(OPENID_DIRECTORY.'EasyOpenID_Icons/');
 		}
 		
 		if ($popups === null)
@@ -705,10 +744,12 @@ class OpenID {
 		{
 			if (array_key_exists($provider, $this->providers))
 			{
+				$icon = $icons.$provider.(($icon_loader) ? '' : '.png');
 				$links[] = (object) array(
 					'href' => $handler.'/'.$provider,
 					'rel'  => 'openid',
-					'text' => $this->providers[$provider]
+					'text' => $this->providers[$provider],
+					'icon' => $this->_build_icon($icon)
 				);
 			}
 			else

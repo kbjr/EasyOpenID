@@ -65,7 +65,20 @@ class Test extends Controller {
 	function build()
 	{
 		header('Content-Type: text/plain');
-		$this->openid->build_openid_auth('test/build');
+		$this->openid->build_openid_auth('test/build', array('openid', 'google', 'yahoo'), 'test/load_icon');
+	}
+	
+	function load_icon()
+	{
+		$which = $this->uri->segment(3);
+		$allowed = array('google', 'yahoo', 'myspace', 'blogger', 'aol', 'openid');
+		if (in_array($which, $allowed))
+		{
+			$icon = OPENID_DIRECTORY.'EasyOpenID_Icons/'.$which.'.png';
+			$icon = file_get_contents($icon);
+			header('Content-Type: image/png');
+			die($icon);
+		}
 	}
 
 }
