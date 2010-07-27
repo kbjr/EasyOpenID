@@ -9,3 +9,5 @@ Dual licensed under MIT and GPL
 h2. Description
 
 An easy to use OpenID library for CodeIgniter applications.
+
+For full documentation, see the project home page at "http://code.kbjrweb.com/project/easyopenid":http://code.kbjrweb.com/project/easyopenid
