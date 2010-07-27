@@ -17,7 +17,7 @@ class Test extends Controller {
 	function third_party()
 	{
 		$which = $this->uri->segment(3);
-		$allowed = array('google', 'yahoo', 'myspace', 'aol', 'openid', 'openid-form');
+		$allowed = array('google', 'yahoo', 'myspace', 'aol', 'openid');
 		if (in_array($which, $allowed, true))
 		{
 			switch ($which)
@@ -28,23 +28,24 @@ class Test extends Controller {
 				case 'yahoo':
 					$this->openid->try_auth_yahoo('test/finish_auth');
 				break;
-				case 'aol':
-					$this->openid->try_auth_aol('test/finish_auth');
-				break;
 				case 'openid':
-					$this->load->view('test', array('openid' => true));
-				break;
-				case 'openid-form':
-					$this->openid->try_auth_sreg($_POST['id'], 'test/finish_auth');
+					if (isset($_POST['openid']) && ! empty($_POST['openid']))
+					{
+						$this->openid->try_auth_sreg($_POST['openid'], 'test/finish_auth');
+					}
+					else
+					{
+						$this->load->view('test', array('openid' => true));
+					}
 				break;
 				default:
-					$this->load->view('test', array('data' => 'fail'));
+					$this->load->view('test', array('data' => 'Invalid Provider'));
 				break;
 			}
 		}
 		else
 		{
-			$this->load->view('test', array('data' => 'fail'));
+			$this->load->view('test', array('data' => 'Invalid Provider'));
 		}
 	}
 	
@@ -60,12 +61,6 @@ class Test extends Controller {
 			$data = array('data' => $result);
 		}
 		$this->load->view('test', $data);
-	}
-	
-	function build()
-	{
-		header('Content-Type: text/plain');
-		$this->openid->build_openid_auth('test/build', array('openid', 'google', 'yahoo'), 'test/load_icon');
 	}
 	
 	function load_icon()

@@ -745,19 +745,25 @@ class OpenID {
 			if (array_key_exists($provider, $this->providers))
 			{
 				$icon = $icons.$provider.(($icon_loader) ? '' : '.png');
-				$links[] = (object) array(
-					'href' => $handler.'/'.$provider,
-					'rel'  => 'openid',
-					'text' => $this->providers[$provider],
-					'icon' => $this->_build_icon($icon)
+				$link = (object) array(
+					'provider' => $provider,
+					'href'     => $handler.'/'.$provider,
+					'rel'      => 'openid',
+					'text'     => $this->providers[$provider],
+					'icon'     => $this->_build_icon($icon),
+					'anchor'   => null
 				);
+				$link->anchor = '<a href="'.$link->href.'" rel="'.$link->rel.'">'.$link->icon.
+					'<span>'.$link->text.'</span></a>';
+				$links[] = $link;
+				unset($link);
 			}
 			else
 			{
 				throw new Exception('provider "'.$provider.'" does not exist in the EasyOpenID system', E_USER_NOTICE);
 			}
 		}
-		print_r($links);
+		return $links;
 	}
 
 }
