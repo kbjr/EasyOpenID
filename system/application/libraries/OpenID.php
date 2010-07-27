@@ -631,6 +631,7 @@ class OpenID {
 		}
 		else if ($response->status == Auth_OpenID_SUCCESS)
 		{
+			// if AX
 			if ($response->endpoint->used_yadis)
 			{
 				$ax_resp = new Auth_OpenID_AX_FetchResponse();
@@ -649,6 +650,7 @@ class OpenID {
 				}
 				$data = $new_data;
 			}
+			// if SReg
 			else
 			{
 				$sreg_resp = Auth_OpenID_SRegResponse::fromSuccessResponse($response);
