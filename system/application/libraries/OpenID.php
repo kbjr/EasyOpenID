@@ -141,9 +141,13 @@ class OpenID {
 			break;
 		}
 		/**
-		 * Require the Simple Registration extension API.
+		 * Require the Simple Registration extension API. (just about everyone)
 		 */
 		require_once OPENID_DIRECTORY.'Auth/OpenID/SReg.php';
+		/**
+		 * Require the AX extension API. (google and yahoo)
+		 */
+		require_once OPENID_DIRECTORY.'Auth/OpenID/AX.php';
 		/**
 		 * Require the PAPE extension module.
 		 */
@@ -183,6 +187,25 @@ class OpenID {
  */
 	
 	protected $ci = null;
+	
+	protected $ax_properties = array(
+		'email'     => 'http://axschema.org/contact/email',
+		'firstname' => 'http://axschema.org/namePerson/first',
+		'fname'     => 'http://axschema.org/namePerson/first',
+		'lastname'  => 'http://axschema.org/namePerson/last',
+		'lname'     => 'http://axschema.org/namePerson/last',
+		'username'  => 'http://axschema.org/namePerson/friendly',
+		'nickname'  => 'http://axschema.org/namePerson/friendly'
+	);
+	
+	protected $ax_aliases = array(
+		'http://axschema.org/contact/email'       => 'email',
+		'http://axschema.org/namePerson/first'    => 'firstname',
+		'http://axschema.org/namePerson/last'     => 'lastname',
+		'http://axschema.org/namePerson/friendly' => 'nickname'
+	);
+	
+	protected $_error = null;
 
 /*
  * Public Properties
@@ -314,6 +337,17 @@ class OpenID {
  */
 
 	/**
+	* Get the last occuring error.
+	*
+	* @access  public
+	* @return  string
+	*/
+	public function last_error()
+	{
+		return $this->_error;
+	}
+
+	/**
 	* Try to authenticate a user on Google accounts
 	*
 	* @access  public
@@ -323,8 +357,8 @@ class OpenID {
 	*/
 	public function try_auth_google($return_to, $policy_uris = array())
 	{
-		return $this->try_auth('https://www.google.com/accounts/o8/id', $return_to, $policy_uris,
-			array('http://schema.openid.net/contact/email'));
+		return $this->try_auth_ax('https://www.google.com/accounts/o8/id', $return_to, $policy_uris,
+			array('email'), array('firstname', 'lastname'));
 	}
 
 	/**
@@ -337,8 +371,7 @@ class OpenID {
 	*/
 	public function try_auth_yahoo($return_to, $policy_uris = array())
 	{
-		return $this->try_auth('https://www.yahoo.com', $return_to, $policy_uris,
-			array('http://axschema.org/namePerson/friendly', 'http://axschema.org/contact/email'));
+		return $this->try_auth_ax('https://www.yahoo.com', $return_to, $policy_uris);
 	}
 
 	/**
@@ -351,7 +384,7 @@ class OpenID {
 	*/
 	public function try_auth_myspace($return_to, $policy_uris = array())
 	{
-		return $this->try_auth('http://www.myspace.com', $return_to, $policy_uris);
+		return $this->try_auth_sreg('http://www.myspace.com', $return_to, $policy_uris);
 	}
 
 	/**
@@ -365,7 +398,7 @@ class OpenID {
 	*/
 	public function try_auth_blogger($blog_name, $return_to, $policy_uris = array())
 	{
-		return $this->try_auth('http://'.$blog_name.'.blogspot.com', $return_to, $policy_uris);
+		return $this->try_auth_sreg('http://'.$blog_name.'.blogspot.com', $return_to, $policy_uris);
 	}
 
 	/**
@@ -378,19 +411,121 @@ class OpenID {
 	*/
 	public function try_auth_aol($return_to, $policy_uris = array())
 	{
-		return $this->try_auth('openid.aol.com', $return_to, $policy_uris);
+		return $this->try_auth_sreg('openid.aol.com', $return_to, $policy_uris);
 	}
 
 	/**
-	* Try to authenticate a user.
+	* Try to authenticate a user using AX.
 	*
 	* @access  public
 	* @param   string   the openid url
 	* @param   string   the path to return to after authenticating
 	* @param   array    a list of PAPE policies to request from the server
-	* @return  string
+	* @param   array    required data
+	* @param   array    optional data
+	* @return  void
 	*/
-	public function try_auth($openid, $return_to, $policy_uris = array(),
+	public function try_auth_ax($openid, $return_to, $policy_uris = array(),
+		$required = array('nickname', 'email'), $optional = array('fname', 'lname'))
+	{
+		if ($return_to[0] == '/')
+			$return_to = substr($return_to, 1);
+		$return_to = $this->_get_trust_root().$return_to;
+		
+		if (empty($openid))
+		{
+			return OPENID_RETURN_NO_URL;
+		}
+		
+		// Create OpenID consumer
+		$consumer = $this->_get_consumer();
+
+		// Create an authentication request to the OpenID provider
+		$auth = $consumer->begin($openid);
+
+		// Create AX fetch request
+		$ax = new Auth_OpenID_AX_FetchRequest;
+
+		// Create attribute request object
+		// See http://code.google.com/apis/accounts/docs/OpenID.html#Parameters for parameters
+		foreach ($required as $item)
+		{
+			if (array_key_exists($item, $this->ax_properties))
+			{
+				$ax->add(Auth_OpenID_AX_AttrInfo::make($this->ax_properties[$item], 1, 1, $item));
+			}
+			else
+			{
+				throw new Exception('AX property "'.$item.'" is not registered in the library', E_USER_NOTICE);
+			}
+		}
+		foreach ($optional as $item)
+		{
+			if (array_key_exists($item, $this->ax_properties))
+			{
+				$ax->add(Auth_OpenID_AX_AttrInfo::make($this->ax_properties[$item], 1, 0, $item));
+			}
+			else
+			{
+				throw new Exception('AX property "'.$item.'" is not registered in the library', E_USER_NOTICE);
+			}
+		}
+
+		// Add AX fetch request to authentication request
+		$auth->addExtension($ax);
+
+		// Redirect to OpenID provider for authentication
+		$url = $auth->redirectURL($this->_get_trust_root(), $return_to);
+		
+		// For OpenID 1, send a redirect.  For OpenID 2, use a Javascript
+		// form to send a POST request to the server.
+		if ($auth->shouldSendRedirect())
+		{
+			$redirect_url = $auth->redirectURL($this->_get_trust_root(), $return_to);
+
+			// If the redirect URL can't be built, die.
+			if (Auth_OpenID::isFailure($redirect_url))
+			{
+				return OPENID_RETURN_NO_CONNECT;
+			}
+			else
+			{
+				// Send redirect.
+				header("Location: ".$redirect_url);
+			}
+		}
+		else
+		{
+			// Generate form markup and render it.
+			$form_id = 'openid_message';
+			$form_html = $auth->htmlMarkup(
+				$this->_get_trust_root(), $return_to, false, array('id' => $form_id));
+
+			// Display an error if the form markup couldn't be generated;
+			// otherwise, render the HTML.
+			if (Auth_OpenID::isFailure($form_html))
+			{
+				return OPENID_RETURN_NO_CONNECT;
+			}
+			else
+			{
+				echo $form_html;
+			}
+		}
+	}
+
+	/**
+	* Try to authenticate a user using SReg.
+	*
+	* @access  public
+	* @param   string   the openid url
+	* @param   string   the path to return to after authenticating
+	* @param   array    a list of PAPE policies to request from the server
+	* @param   array    required data
+	* @param   array    optional data
+	* @return  void
+	*/
+	public function try_auth_sreg($openid, $return_to, $policy_uris = array(),
 		$required = array('nickname', 'email'), $optional = array('fullname'))
 	{
 		if ($return_to[0] == '/')
@@ -438,8 +573,7 @@ class OpenID {
 		{
 			$redirect_url = $auth_request->redirectURL($this->_get_trust_root(), $return_to);
 
-			// If the redirect URL can't be built, display an error
-			// message.
+			// If the redirect URL can't be built, die.
 			if (Auth_OpenID::isFailure($redirect_url))
 			{
 				return OPENID_RETURN_NO_CONNECT;
@@ -487,19 +621,41 @@ class OpenID {
 		// Check the response status.
 		if ($response->status == Auth_OpenID_CANCEL)
 		{
+			$this->_error = 'request was canceled';
 			return OPENID_RETURN_CANCEL;
 		}
 		else if ($response->status == Auth_OpenID_FAILURE)
 		{
+			$this->_error = $response->message;
 			return OPENID_RETURN_FAILURE;
 		}
 		else if ($response->status == Auth_OpenID_SUCCESS)
 		{
-			$sreg_resp = Auth_OpenID_SRegResponse::fromSuccessResponse($response);
+			if ($response->endpoint->used_yadis)
+			{
+				$ax_resp = new Auth_OpenID_AX_FetchResponse();
+				$data = $ax_resp->fromSuccessResponse($response)->data;
+				$new_data = array();
+				foreach ($data as $i => $item)
+				{
+					if (array_key_exists($i, $this->ax_aliases))
+					{
+						$new_data[$this->ax_aliases[$i]] = $item;
+					}
+					else
+					{
+						$new_data[$i] = $item;
+					}
+				}
+				$data = $new_data;
+			}
+			else
+			{
+				$sreg_resp = Auth_OpenID_SRegResponse::fromSuccessResponse($response);
+				$data = $sreg_resp->contents();
+			}
 
-			$sreg = $sreg_resp->contents();
-
-			return $sreg;
+			return $data;
 		}
 		
 		return OPENID_RETURN_FAILURE;

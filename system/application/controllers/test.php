@@ -28,9 +28,6 @@ class Test extends Controller {
 				case 'yahoo':
 					$this->openid->try_auth_yahoo('test/finish_auth');
 				break;
-				case 'myspace':
-					$this->openid->try_auth_myspace('test/finish_auth');
-				break;
 				case 'aol':
 					$this->openid->try_auth_aol('test/finish_auth');
 				break;
@@ -38,7 +35,7 @@ class Test extends Controller {
 					$this->load->view('test', array('openid' => true));
 				break;
 				case 'openid-form':
-					$this->openid->try_auth($_POST['id'], 'test/finish_auth');
+					$this->openid->try_auth_sreg($_POST['id'], 'test/finish_auth');
 				break;
 				default:
 					$this->load->view('test', array('data' => 'fail'));
@@ -54,7 +51,15 @@ class Test extends Controller {
 	function finish_auth()
 	{
 		$result = $this->openid->finish_auth();
-		$this->load->view('test', array('data' => $result));
+		if (is_int($result))
+		{
+			$data = array('data' => $this->openid->last_error());
+		}
+		else
+		{
+			$data = array('data' => $result);
+		}
+		$this->load->view('test', $data);
 	}
 
 }

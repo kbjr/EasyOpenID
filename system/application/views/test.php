@@ -27,7 +27,10 @@
 			.data {
 				border: 1px solid #666666;
 				background: #888888;
+			}
+			.data pre {
 				color: #fff;
+				font-family: monospace;
 			}
 			#verify-form {
 				border: 1px solid #777777;
@@ -44,7 +47,7 @@
 		</p>
 
 		<?php if (isset($data) && ! empty($data)) {
-			print '<div class="data">'.print_r($data, true).'</div>';
+			print '<div class="data"><pre>'.print_r($data, true).'</pre></div>';
 		} ?>
 
 		<div id="verify-form">
@@ -57,8 +60,7 @@
 			<?php endif; ?>
 			<a href="test/third_party/google">Sign in with Google Accounts</a><br />
 			<a href="test/third_party/yahoo">Sign in with Yahoo!</a><br />
-			<a href="test/third_party/aol">Sign in with AOL</a><br />
-			<a href="test/third_party/myspace">Sign in with MySpaceID</a><br />
+			<a href="test/third_party/aol">Sign in with AOL</a>
 		</div>
 	</body>
 </html>
