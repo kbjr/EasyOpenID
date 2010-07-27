@@ -14,33 +14,50 @@ class Test extends Controller {
 		$this->load->view('test');
 	}
 	
-	function try_auth()
+	function third_party()
 	{
-		$policies = ((array_key_exists('policies', $_POST)) ? $_POST['policies'] : array());
-		switch ($_POST['verify'])
+		$which = $this->uri->segment(3);
+		$allowed = array('google', 'yahoo', 'myspace', 'aol', 'openid', 'openid-form');
+		if (in_array($which, $allowed, true))
 		{
-			case 'Verify':
-				$result = $this->openid->try_auth($_POST['openid_identifier'], 'test/finish_auth', $policies);
-			break;
-			case 'Google':
-				$result = $this->openid->try_auth_google('test/finish_auth', $policies);
-			break;
-			case 'Yahoo!':
-				$result = $this->openid->try_auth_yahoo('test/finish_auth', $policies);
-			break;
+			switch ($which)
+			{
+				case 'google':
+					$this->openid->try_auth_google('test/finish_auth');
+				break;
+				case 'yahoo':
+					$this->openid->try_auth_yahoo('test/finish_auth');
+				break;
+				case 'myspace':
+					$this->openid->try_auth_myspace('test/finish_auth');
+				break;
+				case 'aol':
+					$this->openid->try_auth_aol('test/finish_auth');
+				break;
+				case 'openid':
+					$this->load->view('test', array('openid' => true));
+				break;
+				case 'openid-form':
+					$this->openid->try_auth($_POST['id'], 'test/finish_auth');
+				break;
+				default:
+					$this->load->view('test', array('data' => 'fail'));
+				break;
+			}
 		}
-		if (is_string($result)) echo $result;
+		else
+		{
+			$this->load->view('test', array('data' => 'fail'));
+		}
 	}
 	
 	function finish_auth()
 	{
 		$result = $this->openid->finish_auth();
-		echo '<pre>';
-		print_r($result);
-		echo '</pre>';
+		$this->load->view('test', array('data' => $result));
 	}
 
 }
 
-/* End of file welcome.php */
-/* Location: ./system/application/controllers/welcome.php */
+/* End of file test.php */
+/* Location: ./system/application/controllers/test.php */

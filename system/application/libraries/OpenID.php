@@ -323,7 +323,8 @@ class OpenID {
 	*/
 	public function try_auth_google($return_to, $policy_uris = array())
 	{
-		return $this->try_auth('https://www.google.com/accounts/o8/id', $return_to, $policy_uris);
+		return $this->try_auth('https://www.google.com/accounts/o8/id', $return_to, $policy_uris,
+			array('http://schema.openid.net/contact/email'));
 	}
 
 	/**
@@ -336,7 +337,48 @@ class OpenID {
 	*/
 	public function try_auth_yahoo($return_to, $policy_uris = array())
 	{
-		return $this->try_auth('https://www.yahoo.com', $return_to, $policy_uris);
+		return $this->try_auth('https://www.yahoo.com', $return_to, $policy_uris,
+			array('http://axschema.org/namePerson/friendly', 'http://axschema.org/contact/email'));
+	}
+
+	/**
+	* Try to authenticate a user on MySpaceID accounts
+	*
+	* @access  public
+	* @param   string   the path to return to after authenticating
+	* @param   array    a list of PAPE policies to request from the server
+	* @return  string
+	*/
+	public function try_auth_myspace($return_to, $policy_uris = array())
+	{
+		return $this->try_auth('http://www.myspace.com', $return_to, $policy_uris);
+	}
+
+	/**
+	* Try to authenticate a user on Blogger/Blogspot accounts
+	*
+	* @access  public
+	* @param   string   the *.blogspot.com subdomain for the user's blog
+	* @param   string   the path to return to after authenticating
+	* @param   array    a list of PAPE policies to request from the server
+	* @return  string
+	*/
+	public function try_auth_blogger($blog_name, $return_to, $policy_uris = array())
+	{
+		return $this->try_auth('http://'.$blog_name.'.blogspot.com', $return_to, $policy_uris);
+	}
+
+	/**
+	* Try to authenticate a user on AOL accounts
+	*
+	* @access  public
+	* @param   string   the path to return to after authenticating
+	* @param   array    a list of PAPE policies to request from the server
+	* @return  string
+	*/
+	public function try_auth_aol($return_to, $policy_uris = array())
+	{
+		return $this->try_auth('openid.aol.com', $return_to, $policy_uris);
 	}
 
 	/**
@@ -348,7 +390,8 @@ class OpenID {
 	* @param   array    a list of PAPE policies to request from the server
 	* @return  string
 	*/
-	public function try_auth($openid, $return_to, $policy_uris = array())
+	public function try_auth($openid, $return_to, $policy_uris = array(),
+		$required = array('nickname', 'email'), $optional = array('fullname'))
 	{
 		if ($return_to[0] == '/')
 			$return_to = substr($return_to, 1);
@@ -370,12 +413,7 @@ class OpenID {
 			return OPENID_RETURN_BAD_URL;
 		}
 
-		$sreg_request = Auth_OpenID_SRegRequest::build(
-			// Required
-			array('nickname'),
-			// Optional
-			array('fullname', 'email')
-		);
+		$sreg_request = Auth_OpenID_SRegRequest::build($required, $optional);
 
 		if ($sreg_request)
 		{
@@ -427,7 +465,7 @@ class OpenID {
 			}
 			else
 			{
-				return $form_html;
+				echo $form_html;
 			}
 		}
 	}
@@ -443,8 +481,7 @@ class OpenID {
 		$msg = $error = $success = '';
 		$consumer = $this->_get_consumer();
 
-		// Complete the authentication process using the server's
-		// response.
+		// Complete the authentication process using the server's response.
 		$response = $consumer->complete($this->_get_self());
 
 		// Check the response status.
@@ -458,12 +495,6 @@ class OpenID {
 		}
 		else if ($response->status == Auth_OpenID_SUCCESS)
 		{
-			// This means the authentication succeeded; extract the
-			// identity URL and Simple Registration data (if it was
-			// returned).
-			$openid = $response->getDisplayIdentifier();
-			$esc_identity = $this->_escape($openid);
-
 			$sreg_resp = Auth_OpenID_SRegResponse::fromSuccessResponse($response);
 
 			$sreg = $sreg_resp->contents();
