@@ -704,10 +704,11 @@ class OpenID {
 	* @access  public
 	* @param   string   where should the links go
 	* @param   array    a list of providers to offer
+	* @param   string   what route loads icons
 	* @param   bool     authenticate with popups
 	* @return  string
 	*/
-	public function build_openid_auth($handler = null, $providers = array('openid', 'google', 'yahoo'),
+	public function build_auth($handler = null, $providers = array('openid', 'google', 'yahoo'),
 		$icon_loader = null, $popups = null)
 	{
 		if (! is_string($handler) || empty($handler))
@@ -764,6 +765,25 @@ class OpenID {
 			}
 		}
 		return $links;
+	}
+
+	/**
+	* Load an icon.
+	*
+	* @access  public
+	* @return  void
+	*/
+	public function icon_loader()
+	{
+		$which = $this->ci->uri->segment(3);
+		$allowed = array('google', 'yahoo', 'myspace', 'blogger', 'aol', 'openid');
+		if (in_array($which, $allowed))
+		{
+			$icon = OPENID_DIRECTORY.'EasyOpenID_Icons/'.$which.'.png';
+			$icon = file_get_contents($icon);
+			header('Content-Type: image/png');
+			die($icon);
+		}
 	}
 
 }

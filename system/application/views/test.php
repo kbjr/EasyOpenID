@@ -1,5 +1,5 @@
 <?php
-$links = $this->openid->build_openid_auth(
+$links = $this->openid->build_auth(
 	'test/third_party',
 	array('openid', 'google', 'yahoo'),
 	'test/load_icon'
@@ -68,7 +68,7 @@ $links = $this->openid->build_openid_auth(
 		endif; ?>
 
 		<div id="verify-form">
-			<?php 
+			<?php
 				foreach ($links as $link) :
 					echo $link->anchor."<br />\n";
 					if ($link->provider == 'openid' && isset($openid) && $openid) : ?>

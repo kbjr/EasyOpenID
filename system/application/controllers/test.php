@@ -6,7 +6,6 @@ class Test extends Controller {
 	{
 		parent::Controller();
 		$this->load->library('OpenID');
-		$this->load->helper('form');
 	}
 	
 	function index()
@@ -31,7 +30,11 @@ class Test extends Controller {
 				case 'openid':
 					if (isset($_POST['openid']) && ! empty($_POST['openid']))
 					{
-						$this->openid->try_auth_sreg($_POST['openid'], 'test/finish_auth');
+						$result = $this->openid->try_auth_sreg($_POST['openid'], 'test/finish_auth');
+						if (is_int($result))
+						{
+							$this->load->view('test', array('data' => 'Invalid Provider'));
+						}
 					}
 					else
 					{
@@ -65,15 +68,7 @@ class Test extends Controller {
 	
 	function load_icon()
 	{
-		$which = $this->uri->segment(3);
-		$allowed = array('google', 'yahoo', 'myspace', 'blogger', 'aol', 'openid');
-		if (in_array($which, $allowed))
-		{
-			$icon = OPENID_DIRECTORY.'EasyOpenID_Icons/'.$which.'.png';
-			$icon = file_get_contents($icon);
-			header('Content-Type: image/png');
-			die($icon);
-		}
+		$this->openid->icon_loader();
 	}
 
 }
