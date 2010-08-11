@@ -16,42 +16,42 @@
 
 // ------------------------------------------------------------------------
 
-/*
+/**
  * OpenID Directory Path
  *
  * @const  OPENID_DIRECTORY
  */
 define('OPENID_DIRECTORY', dirname(__FILE__)."/php-openid/");
 
-/*
+/**
  * No OpenID URL Given
  *
  * @const  OPENID_RETURN_NO_URL
  */
 define('OPENID_RETURN_NO_URL', 10);
 
-/*
+/**
  * Bad OpenID URL Given
  *
  * @const  OPENID_RETURN_BAD_URL
  */
 define('OPENID_RETURN_BAD_URL', 20);
 
-/*
+/**
  * Could not connect to verifying server
  *
  * @const  OPENID_RETURN_NO_CONNECT
  */
 define('OPENID_RETURN_NO_CONNECT', 30);
 
-/*
+/**
  * Verification canceled
  *
  * @const  OPENID_RETURN_CANCEL
  */
 define('OPENID_RETURN_CANCEL', 40);
 
-/*
+/**
  * Verification failure
  *
  * @const  OPENID_RETURN_FAILURE
@@ -87,11 +87,11 @@ class OpenID {
 	);
 	
 	/**
-	* Initialize the class.
-	*
-	* @access  protected
-	* @return  void
-	*/
+	 * Initialize the class.
+	 *
+	 * @access  protected
+	 * @return  void
+	 */
 	protected static function class_init()
 	{
 		if (self::$CI === null)
@@ -99,12 +99,12 @@ class OpenID {
 	}
 	
 	/**
-	* Reads an item from config
-	*
-	* @access  protected
-	* @param   string   the item to read
-	* @return  mixed
-	*/
+	 * Reads an item from config
+	 *
+	 * @access  protected
+	 * @param   string   the item to read
+	 * @return  mixed
+	 */
 	protected static function read_config($item)
 	{
 		$conf = self::$CI->config->item($item, 'openid');
@@ -114,11 +114,11 @@ class OpenID {
 	}
 	
 	/**
-	* Include needed files
-	*
-	* @access  protected
-	* @return  void
-	*/
+	 * Include needed files
+	 *
+	 * @access  protected
+	 * @return  void
+	 */
 	protected static function do_includes()
 	{
 		/**
@@ -168,11 +168,11 @@ class OpenID {
  */
 	
 	/**
-	* Constructor
-	*
-	* @access  public
-	* @return  void
-	*/
+	 * Constructor
+	 *
+	 * @access  public
+	 * @return  void
+	 */
 	public function __construct()
 	{
 		self::class_init();
@@ -234,12 +234,12 @@ class OpenID {
  */
 	
 	/**
-	* Read an item from config.
-	*
-	* @access  protected
-	* @param   string   the item to read
-	* @return  mixed
-	*/
+	 * Read an item from config.
+	 *
+	 * @access  protected
+	 * @param   string   the item to read
+	 * @return  mixed
+	 */
 	protected function _read_config($item)
 	{
 		$conf = $this->ci->config->item($item, 'openid');
@@ -249,11 +249,11 @@ class OpenID {
 	}
 
 	/**
-	* Create a store object.
-	*
-	* @access  protected
-	* @return  mixed
-	*/
+	 * Create a store object.
+	 *
+	 * @access  protected
+	 * @return  mixed
+	 */
 	protected function &_get_store()
 	{
 		$store_type = $this->_read_config('store_method');
@@ -278,6 +278,12 @@ class OpenID {
 		return $r;
 	}
 	
+	/**
+	 * Gets a session handler
+	 *
+	 * @access  protected
+	 * @return  OpenID_Session
+	 */
 	protected function &_get_session()
 	{
 		$r = new OpenID_Session();
@@ -285,11 +291,11 @@ class OpenID {
 	}
 
 	/**
-	* Create a consumer object.
-	*
-	* @access  protected
-	* @return  Auth_OpenID_Consumer
-	*/
+	 * Create a consumer object.
+	 *
+	 * @access  protected
+	 * @return  Auth_OpenID_Consumer
+	 */
 	protected function &_get_consumer()
 	{
 		$store = $this->_get_store();
@@ -299,15 +305,15 @@ class OpenID {
 	}
 
 	/**
-	* Create a popup enabling UI object.
-	*
-	* @access  protected
-	* @param   &string   the return to address
-	* @return  OpenID_UI_Request
-	*/
+	 * Create a popup enabling UI object.
+	 *
+	 * @access  protected
+	 * @param   &string   the return to address
+	 * @return  OpenID_UI_Request
+	 */
 	protected function &_get_ui(&$return_to)
 	{
-		$this->ci->session->set_userdata('EasyOpenID_popup', true);
+		$this->ci->session->set_userdata('_openid_popup', true);
 		$r = new OpenID_UI_Request();
 		$r->setIcon();
 		$r->setPopup();
@@ -315,11 +321,11 @@ class OpenID {
 	}
 
 	/**
-	* Create the current scheme (http or https).
-	*
-	* @access  protected
-	* @return  string
-	*/
+	 * Create the current scheme (http or https).
+	 *
+	 * @access  protected
+	 * @return  string
+	 */
 	protected function _get_scheme()
 	{
 		$scheme = 'http';
@@ -331,22 +337,22 @@ class OpenID {
 	}
 
 	/**
-	* Create the base url.
-	*
-	* @access  protected
-	* @return  string
-	*/
+	 * Create the base url.
+	 *
+	 * @access  protected
+	 * @return  string
+	 */
 	protected function _get_trust_root()
 	{
 		return $this->ci->config->item('base_url');
 	}
 
 	/**
-	* Escape a string.
-	*
-	* @access  protected
-	* @param   string   the string to escape
-	* @return  string
+	 * Escape a string.
+	 *
+	 * @access  protected
+	 * @param   string   the string to escape
+	 * @return  string
 	*/
 	protected function _escape($str)
 	{
@@ -354,23 +360,23 @@ class OpenID {
 	}
 
 	/**
-	* Return a url to the current path.
-	*
-	* @access  protected
-	* @return  string
-	*/
+	 * Return a url to the current path.
+	 *
+	 * @access  protected
+	 * @return  string
+	 */
 	protected function _get_self()
 	{
 		return $this->ci->config->item('base_url').substr($this->ci->uri->uri_string(), 1);
 	}
 
 	/**
-	* Turns an absolute path into a URL.
-	*
-	* @access  protected
-	* @param   string   the path to convert
-	* @return  string
-	*/
+	 * Turns an absolute path into a URL.
+	 *
+	 * @access  protected
+	 * @param   string   the path to convert
+	 * @return  string
+	 */
 	protected function _make_url($path)
 	{
 		return ((empty($_SERVER['HTTPS'])) ? "http" : "https") . "://" .
@@ -378,39 +384,103 @@ class OpenID {
 	}
 
 	/**
-	* Creates the <img /> tag for an OpenID icon
-	*
-	* @access  protected
-	* @param   string   image url
-	* @return  string
-	*/
+	 * Creates the <img /> tag for an OpenID icon
+	 *
+	 * @access  protected
+	 * @param   string   image url
+	 * @return  string
+	 */
 	protected function _build_icon($url)
 	{
 		return '<img src="'.$url.'" alt="" title="" width="16" height="16" />';
 	}
+	
+	/**
+	 * Throws an internal error
+	 *
+	 * @access  protected
+	 * @param   mixed    error constant/msg
+	 * @return  int
+	 */
+	protected function _throw_error($error, $msg = null)
+	{
+		if (is_int($error))
+		{
+			if (is_string($msg))
+			{
+				$this->_error = $msg;
+			}
+			else
+			{
+				$this->_error = $this->error_msg($error);
+			}
+			$r = $error;
+		}
+		elseif (is_string($error))
+		{
+			$this->_error = $error;
+			$r = 0;
+		}
+		
+		return $r;
+	}
+	
 
 /*
  * Public Methods
  */
 
 	/**
-	* Get the last occuring error.
-	*
-	* @access  public
-	* @return  string
-	*/
+	 * Get the last occuring error.
+	 *
+	 * @access  public
+	 * @return  string
+	 */
 	public function last_error()
 	{
 		return $this->_error;
 	}
 
 	/**
-	* Sets the "use popup" flag
-	*
-	* @access  public
-	* @param   bool   set to what
-	* @return  void
-	*/
+	 * Get the error message for a given return code.
+	 *
+	 * @access  public
+	 * @param   int      the return code
+	 * @return  string
+	 */
+	public function error_msg($code)
+	{
+		switch ($code)
+		{
+			case OPENID_RETURN_NO_URL:
+				$r = 'No OpenID provider URL was provided';
+			break;
+			case OPENID_RETURN_BAD_URL:
+				$r = 'OpenID provider URL provided was invalid';
+			break;
+			case OPENID_RETURN_NO_CONNECT:
+				$r = 'Connection to the verifying server could not be established';
+			break;
+			case OPENID_RETURN_CANCEL:
+				$r = 'Verification was canceled';
+			break;
+			case OPENID_RETURN_NO_URL:
+				$r = 'Verification failed';
+			break;
+			default:
+				$r = 'No error has occured';
+			break;
+		}
+		return $r;
+	}
+
+	/**
+	 * Sets the "use popup" flag
+	 *
+	 * @access  public
+	 * @param   bool   set to what
+	 * @return  void
+	 */
 	public function use_popup($flag)
 	{
 		$this->use_popup = !! $flag;
@@ -418,15 +488,15 @@ class OpenID {
 	}
 
 	/**
-	* Try to authenticate a user on Google accounts
-	*
-	* @access  public
-	* @param   string   the path to return to after authenticating
-	* @param   array    a list of PAPE policies to request from the server
-	* @param   array    a list of required return values
-	* @param   array    a list of optional return values
-	* @return  string
-	*/
+	 * Try to authenticate a user on Google accounts
+	 *
+	 * @access  public
+	 * @param   string   the path to return to after authenticating
+	 * @param   array    a list of PAPE policies to request from the server
+	 * @param   array    a list of required return values
+	 * @param   array    a list of optional return values
+	 * @return  string
+	 */
 	public function try_auth_google($return_to, $policy_uris = array(), $required = null, $optional = null)
 	{
 		$this->ci->session->set_userdata('EasyOpenID_provider', 'google');
@@ -436,15 +506,15 @@ class OpenID {
 	}
 
 	/**
-	* Try to authenticate a user on Yahoo! accounts
-	*
-	* @access  public
-	* @param   string   the path to return to after authenticating
-	* @param   array    a list of PAPE policies to request from the server
-	* @param   array    a list of required return values
-	* @param   array    a list of optional return values
-	* @return  string
-	*/
+	 * Try to authenticate a user on Yahoo! accounts
+	 *
+	 * @access  public
+	 * @param   string   the path to return to after authenticating
+	 * @param   array    a list of PAPE policies to request from the server
+	 * @param   array    a list of required return values
+	 * @param   array    a list of optional return values
+	 * @return  string
+	 */
 	public function try_auth_yahoo($return_to, $policy_uris = array(), $required = null, $optional = null)
 	{
 		$this->ci->session->set_userdata('EasyOpenID_provider', 'yahoo');
@@ -454,15 +524,15 @@ class OpenID {
 	}
 
 	/**
-	* Try to authenticate a user on MySpaceID accounts
-	*
-	* @access  public
-	* @param   string   the path to return to after authenticating
-	* @param   array    a list of PAPE policies to request from the server
-	* @param   array    a list of required return values
-	* @param   array    a list of optional return values
-	* @return  string
-	*/
+	 * Try to authenticate a user on MySpaceID accounts
+	 *
+	 * @access  public
+	 * @param   string   the path to return to after authenticating
+	 * @param   array    a list of PAPE policies to request from the server
+	 * @param   array    a list of required return values
+	 * @param   array    a list of optional return values
+	 * @return  string
+	 */
 	public function try_auth_myspace($return_to, $policy_uris = array(), $required = null, $optional = null)
 	{
 		$this->ci->session->set_userdata('EasyOpenID_provider', 'myspace');
@@ -472,16 +542,16 @@ class OpenID {
 	}
 
 	/**
-	* Try to authenticate a user on Blogger/Blogspot accounts
-	*
-	* @access  public
-	* @param   string   the *.blogspot.com subdomain for the user's blog
-	* @param   string   the path to return to after authenticating
-	* @param   array    a list of PAPE policies to request from the server
-	* @param   array    a list of required return values
-	* @param   array    a list of optional return values
-	* @return  string
-	*/
+	 * Try to authenticate a user on Blogger/Blogspot accounts
+	 *
+	 * @access  public
+	 * @param   string   the *.blogspot.com subdomain for the user's blog
+	 * @param   string   the path to return to after authenticating
+	 * @param   array    a list of PAPE policies to request from the server
+	 * @param   array    a list of required return values
+	 * @param   array    a list of optional return values
+	 * @return  string
+	 */
 	public function try_auth_blogger($blog_name, $return_to, $policy_uris = array(), $required = null, $optional = null)
 	{
 		$this->ci->session->set_userdata('EasyOpenID_provider', 'blogger');
@@ -491,15 +561,15 @@ class OpenID {
 	}
 
 	/**
-	* Try to authenticate a user on AOL accounts
-	*
-	* @access  public
-	* @param   string   the path to return to after authenticating
-	* @param   array    a list of PAPE policies to request from the server
-	* @param   array    a list of required return values
-	* @param   array    a list of optional return values
-	* @return  string
-	*/
+	 * Try to authenticate a user on AOL accounts
+	 *
+	 * @access  public
+	 * @param   string   the path to return to after authenticating
+	 * @param   array    a list of PAPE policies to request from the server
+	 * @param   array    a list of required return values
+	 * @param   array    a list of optional return values
+	 * @return  string
+	 */
 	public function try_auth_aol($return_to, $policy_uris = array(), $required = null, $optional = null)
 	{
 		$this->ci->session->set_userdata('EasyOpenID_provider', 'aol');
@@ -509,16 +579,16 @@ class OpenID {
 	}
 
 	/**
-	* Try to authenticate a user using AX.
-	*
-	* @access  public
-	* @param   string   the openid url
-	* @param   string   the path to return to after authenticating
-	* @param   array    a list of PAPE policies to request from the server
-	* @param   array    a list of required return values
-	* @param   array    a list of optional return values
-	* @return  void
-	*/
+	 * Try to authenticate a user using AX.
+	 *
+	 * @access  public
+	 * @param   string   the openid url
+	 * @param   string   the path to return to after authenticating
+	 * @param   array    a list of PAPE policies to request from the server
+	 * @param   array    a list of required return values
+	 * @param   array    a list of optional return values
+	 * @return  void
+	 */
 	public function try_auth_ax($openid, $return_to, $policy_uris = array(),
 		$required = array('nickname', 'email'), $optional = array('fname', 'lname'))
 	{
@@ -528,7 +598,7 @@ class OpenID {
 		
 		if (empty($openid))
 		{
-			return OPENID_RETURN_NO_URL;
+			return $this->_throw_error(OPENID_RETURN_NO_URL);
 		}
 		
 		// Create OpenID consumer
@@ -549,28 +619,26 @@ class OpenID {
 
 		// Create attribute request object
 		// See http://code.google.com/apis/accounts/docs/OpenID.html#Parameters for parameters
-		foreach ($required as $item)
+		foreach (array(1 => $required, 0 => $optional) as $key => $data)
 		{
-			if (array_key_exists($item, $this->ax_properties))
+			foreach ($data as $item)
 			{
-				$ax->add(Auth_OpenID_AX_AttrInfo::make($this->ax_properties[$item], 1, 1, $item));
-			}
-			else
-			{
-				throw new Exception('AX property "'.$item.'" is not registered in the library', E_USER_NOTICE);
+				if (array_key_exists($item, $this->ax_properties))
+				{
+					$ax->add(Auth_OpenID_AX_AttrInfo::make($this->ax_properties[$item], 1, $key, $item));
+				}
+				else
+				{
+					return $this->_throw_error('AX property "'.$item.'" is not registered in the library');
+				}
 			}
 		}
-		foreach ($optional as $item)
-		{
-			if (array_key_exists($item, $this->ax_properties))
-			{
-				$ax->add(Auth_OpenID_AX_AttrInfo::make($this->ax_properties[$item], 1, 0, $item));
-			}
-			else
-			{
-				throw new Exception('AX property "'.$item.'" is not registered in the library', E_USER_NOTICE);
-			}
-		}
+
+		// Redirect the user to the OpenID server for authentication.
+		// Store the token for this authentication so we can verify the
+		// response.
+		if (! $this->ci->session->userdata('EasyOpenID_provider'))
+			$this->ci->session->set_userdata('EasyOpenID_provider', $openid);
 
 		// Add AX fetch request to authentication request
 		$auth->addExtension($ax);
@@ -587,7 +655,7 @@ class OpenID {
 			// If the redirect URL can't be built, die.
 			if (Auth_OpenID::isFailure($redirect_url))
 			{
-				return OPENID_RETURN_NO_CONNECT;
+				return $this->_throw_error(OPENID_RETURN_NO_CONNECT);
 			}
 			else
 			{
@@ -606,7 +674,7 @@ class OpenID {
 			// otherwise, render the HTML.
 			if (Auth_OpenID::isFailure($form_html))
 			{
-				return OPENID_RETURN_NO_CONNECT;
+				return $this->_throw_error(OPENID_RETURN_NO_CONNECT);
 			}
 			else
 			{
@@ -616,16 +684,16 @@ class OpenID {
 	}
 
 	/**
-	* Try to authenticate a user using SReg.
-	*
-	* @access  public
-	* @param   string   the openid url
-	* @param   string   the path to return to after authenticating
-	* @param   array    a list of PAPE policies to request from the server
-	* @param   array    required data
-	* @param   array    optional data
-	* @return  void
-	*/
+	 * Try to authenticate a user using SReg.
+	 *
+	 * @access  public
+	 * @param   string   the openid url
+	 * @param   string   the path to return to after authenticating
+	 * @param   array    a list of PAPE policies to request from the server
+	 * @param   array    required data
+	 * @param   array    optional data
+	 * @return  void
+	 */
 	public function try_auth_sreg($openid, $return_to, $policy_uris = array(),
 		$required = array('nickname', 'email'), $optional = array('fullname'))
 	{
@@ -635,7 +703,7 @@ class OpenID {
 		
 		if (empty($openid))
 		{
-			return OPENID_RETURN_NO_URL;
+			return $this->_throw_error(OPENID_RETURN_NO_URL);
 		}
 		
 		$consumer = $this->_get_consumer();
@@ -646,7 +714,7 @@ class OpenID {
 		// No auth request means we can't begin OpenID.
 		if (! $auth_request)
 		{
-			return OPENID_RETURN_BAD_URL;
+			return $this->_throw_error(OPENID_RETURN_BAD_URL);
 		}
 		
 		// Create UI if needed
@@ -675,7 +743,7 @@ class OpenID {
 		// Store the token for this authentication so we can verify the
 		// response.
 		if (! $this->ci->session->userdata('EasyOpenID_provider'))
-			$this->ci->session->set_userdata('EasyOpenID_provider', 'openid');
+			$this->ci->session->set_userdata('EasyOpenID_provider', $openid);
 
 		// For OpenID 1, send a redirect.  For OpenID 2, use a Javascript
 		// form to send a POST request to the server.
@@ -686,7 +754,7 @@ class OpenID {
 			// If the redirect URL can't be built, die.
 			if (Auth_OpenID::isFailure($redirect_url))
 			{
-				return OPENID_RETURN_NO_CONNECT;
+				return $this->_throw_error(OPENID_RETURN_NO_CONNECT);
 			}
 			else
 			{
@@ -705,7 +773,7 @@ class OpenID {
 			// otherwise, render the HTML.
 			if (Auth_OpenID::isFailure($form_html))
 			{
-				return OPENID_RETURN_NO_CONNECT;
+				return $this->_throw_error(OPENID_RETURN_NO_CONNECT);
 			}
 			else
 			{
@@ -715,11 +783,11 @@ class OpenID {
 	}
 
 	/**
-	* Finish up authentication.
-	*
-	* @access  public
-	* @return  string
-	*/
+	 * Finish up authentication.
+	 *
+	 * @access  public
+	 * @return  string
+	 */
 	public function finish_auth()
 	{
 		$msg = $error = $success = '';
@@ -731,13 +799,11 @@ class OpenID {
 		// Check the response status.
 		if ($response->status == Auth_OpenID_CANCEL)
 		{
-			$this->_error = 'request was canceled';
-			return OPENID_RETURN_CANCEL;
+			$data = $this->_throw_error(OPENID_RETURN_CANCEL);
 		}
 		else if ($response->status == Auth_OpenID_FAILURE)
 		{
-			$this->_error = $response->message;
-			return OPENID_RETURN_FAILURE;
+			$data = $this->_throw_error(OPENID_RETURN_FAILURE, $response->message);
 		}
 		else if ($response->status == Auth_OpenID_SUCCESS)
 		{
@@ -766,39 +832,37 @@ class OpenID {
 				$sreg_resp = Auth_OpenID_SRegResponse::fromSuccessResponse($response);
 				$data = $sreg_resp->contents();
 			}
-			
-			// if handling a popup request
-			if ($this->ci->session->userdata('EasyOpenID_popup'))
-			{
-				$this->ci->session->unset_userdata('EasyOpenID_popup');
-				
-				// store the data in a session
-				$this->ci->session->set_userdata('EasyOpenID', $data);
-				
-				// close the popup
-				include OPENID_DIRECTORY.'EasyOpenID_close.php';
-				die();
-			}
-			// if a standard, in-window request
-			else
-			{
-				return $data;
-			}
 		}
-		
-		return OPENID_RETURN_FAILURE;
+			
+		// if handling a popup request
+		if ($this->ci->session->userdata('_openid_popup'))
+		{
+			$this->ci->session->unset_userdata('_openid_popup');
+			
+			// store the data in a session
+			$this->ci->session->set_userdata('_openid_data', $data);
+			
+			// close the popup
+			include OPENID_DIRECTORY.'EasyOpenID_close.php';
+			die();
+		}
+		// if a standard, in-window request
+		else
+		{
+			return $data;
+		}
 	}
 
 	/**
-	* Build an OpenID authentication markup.
-	*
-	* @access  public
-	* @param   string   where should the links go
-	* @param   array    a list of providers to offer
-	* @param   string   what route loads icons
-	* @param   bool     authenticate with popups
-	* @return  string
-	*/
+	 * Build an OpenID authentication markup.
+	 *
+	 * @access  public
+	 * @param   string   where should the links go
+	 * @param   array    a list of providers to offer
+	 * @param   string   what route loads icons
+	 * @param   bool     authenticate with popups
+	 * @return  string
+	 */
 	public function build_auth($handler = null, $providers = array('openid', 'google', 'yahoo'),
 		$icon_loader = null, $popups = null)
 	{
@@ -859,11 +923,11 @@ class OpenID {
 	}
 
 	/**
-	* Load an icon.
-	*
-	* @access  public
-	* @return  void
-	*/
+	 * Load an icon.
+	 *
+	 * @access  public
+	 * @return  void
+	 */
 	public function icon_loader()
 	{
 		$which = $this->ci->uri->segment(3);
@@ -885,4 +949,4 @@ class OpenID {
 
 
 /* End of file OpenID.php */
-/* Location: ./system/application/libraries/OpenID.php */
+/* Location: ./system/libraries/OpenID.php */

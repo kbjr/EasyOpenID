@@ -31,6 +31,11 @@
 
 require_once dirname(__FILE__).'/OpenID.php';
 
+/**
+ * A class for abstracting seperate OpenID requests
+ *
+ * @class  Eoid
+ */
 class Eoid {
 
 	public $provider       = null;
@@ -46,22 +51,49 @@ class Eoid {
 
 }
 
+/**
+ * The simplified active-use version of the OpenID class
+ *
+ * @class   EasyOpenID
+ * @parent  OpenID
+ */
 class EasyOpenID extends OpenID {
 	
 	protected $eoid = null;
-
+	
+	/**
+	 * Constructor
+	 *
+	 * @access  public
+	 * @return  void
+	 */
 	public function __construct()
 	{
 		parent::__construct();
 		$this->eoid = new Eoid();
 	}
 	
+	/**
+	 * Reset all active-use data (replace the Eoid
+	 * with a new one)
+	 *
+	 * @access  public
+	 * @return  self
+	 */
 	public function reset()
 	{
 		$this->eoid = new Eoid();
 		return $this;
 	}
 	
+	/**
+	 * Set a PAPE policy as on or off
+	 *
+	 * @access  public
+	 * @param   int      the policy to set
+	 * @param   bool     turn it on (TRUE) or off (FALSE)
+	 * @return  self
+	 */
 	public function set_policy($policy, $flag = true)
 	{
 		$flag = ($flag) ? 1 : 0;
@@ -72,24 +104,54 @@ class EasyOpenID extends OpenID {
 		return $this;
 	}
 	
+	/**
+	 * Set the multi-factor PAPE policy as on or off
+	 *
+	 * @access  public
+	 * @param   bool     turn it on (TRUE) or off (FALSE)
+	 * @return  self
+	 */
 	public function multi_factor($flag = true)
 	{
 		$this->set_policy(PAPE_AUTH_MULTI_FACTOR, $flag);
 		return $this;
 	}
 	
+	/**
+	 * Set the multi-factor physical PAPE policy as on or off
+	 *
+	 * @access  public
+	 * @param   bool     turn it on (TRUE) or off (FALSE)
+	 * @return  self
+	 */
 	public function multi_factor_physical($flag = true)
 	{
 		$this->set_policy(PAPE_AUTH_MULTI_FACTOR_PHYSICAL, $flag);
 		return $this;
 	}
 	
+	/**
+	 * Set the phishing resistant PAPE policy as on or off
+	 *
+	 * @access  public
+	 * @param   bool     turn it on (TRUE) or off (FALSE)
+	 * @return  self
+	 */
 	public function phishing_resistant($flag = true)
 	{
 		$this->set_policy(PAPE_AUTH_PHISHING_RESISTANT, $flag);
 		return $this;
-	}	
+	}
 	
+	/**
+	 * Set the OpenID provider
+	 *
+	 * @access  public
+	 * @param   string   the provider to use
+	 * @param   string   any secondary data needed (currently
+	 *                   only used by the blogger function).
+	 * @return  self
+	 */
 	public function provider($provider, $provider_data = null)
 	{
 		if (is_string($provider))
@@ -99,6 +161,14 @@ class EasyOpenID extends OpenID {
 		return $this;
 	}
 	
+	/**
+	 * Set the route to return to after authentication
+	 * (the "finish auth" page)
+	 *
+	 * @access  public
+	 * @param   string   the route to redirect to
+	 * @return  self
+	 */
 	public function return_to($route)
 	{
 		if (is_string($route))
@@ -106,6 +176,13 @@ class EasyOpenID extends OpenID {
 		return $this;
 	}
 	
+	/**
+	 * Value or values requested as "required" from the provider
+	 *
+	 * @access  public
+	 * @param   mixed    string value or array of values
+	 * @return  self
+	 */
 	public function required($value)
 	{
 		if (is_string($value))
@@ -116,6 +193,13 @@ class EasyOpenID extends OpenID {
 		return $this;
 	}
 	
+	/**
+	 * Value or values requested as "optional" from the provider
+	 *
+	 * @access  public
+	 * @param   mixed    string value or array of values
+	 * @return  self
+	 */
 	public function optional($value)
 	{
 		if (is_string($value))
@@ -134,6 +218,14 @@ class EasyOpenID extends OpenID {
 		'aol'     => 'sreg'
 	);
 	
+	/**
+	 * Parse SREG parameters into proper format
+	 *
+	 * @access  protected
+	 * @param   array    values to parse
+	 * @param   &array   where to put them when we're finished
+	 * @return  self
+	 */
 	protected function parse_sreg($from, &$to)
 	{
 		foreach ($from as $field)
@@ -142,8 +234,7 @@ class EasyOpenID extends OpenID {
 			{
 				case 'fullname':
 				case 'name':
-					$to[] = 'fname';
-					$to[] = 'lname';
+					$to[] = 'fullname';
 				break;
 				case 'nickname':
 				case 'username':
@@ -157,6 +248,14 @@ class EasyOpenID extends OpenID {
 		$to = array_unique($to);
 	}
 	
+	/**
+	 * Parse AX parameters into proper format
+	 *
+	 * @access  protected
+	 * @param   array    values to parse
+	 * @param   &array   where to put them when we're finished
+	 * @return  void
+	 */
 	protected function parse_ax($from, &$to)
 	{
 		foreach ($from as $field)
@@ -188,10 +287,17 @@ class EasyOpenID extends OpenID {
 		$to = array_unique($to);
 	}
 	
+	/**
+	 * Parse all parameters for a request, SREG or AX
+	 *
+	 * @access  protected
+	 * @param   string   "sreg" or "ax"
+	 * @return  array
+	 */
 	protected function parse_request($type)
 	{
 		$required = $optional = array( );
-		if ($type = 'sreg')
+		if ($type == 'sreg')
 		{
 			$this->parse_sreg($this->eoid->required, $required);
 			$this->parse_sreg($this->eoid->optional, $optional);
@@ -204,6 +310,12 @@ class EasyOpenID extends OpenID {
 		return array($required, $optional);
 	}
 	
+	/**
+	 * Parse the stored policies into a usable list
+	 *
+	 * @access  protected
+	 * @return  array
+	 */
 	protected function parse_policies()
 	{
 		$policies = array( );
@@ -214,6 +326,15 @@ class EasyOpenID extends OpenID {
 		return $policies;
 	}
 	
+	/**
+	 * Make the request
+	 *
+	 * Note: Upon success, this function will redirect the page.
+	 *
+	 * @access  public
+	 * @param   string   if not using a built-in provider, is it SREG or AX
+	 * @return  int
+	 */
 	public function make_request($type = 'sreg')
 	{
 		if (isset($this->types[$this->eoid->provider]))
@@ -253,27 +374,73 @@ class EasyOpenID extends OpenID {
 					}
 					else
 					{
-						$this->_error = 'Invalid provider type "'.$type.'"';
-						return OPENID_RETURN_FAILURE;
+						return $this->_throw_error('Invalid provider type "'.$type.'"');
 					}
 				break;
 			}
 		}
 		else
 		{
-			return OPENID_RETURN_NO_URL;
+			return $this->_throw_error(OPENID_RETURN_NO_URL);
 		}
+		
+		return $this->_throw_error($result);
 	}
 	
-	public function fetch_result()
+	/**
+	 * Fetch and store the OpenID provider response
+	 *
+	 * Note: when using the popup mode, this function will close the window.
+	 *
+	 * @access  public
+	 * @return  self
+	 */
+	public function fetch_response()
 	{
-		return $this->finish_auth();
+		$resp = $this->finish_auth();
+		if (! is_int($resp))
+		{
+			$this->ci->session->set_userdata('_openid_data', $resp);
+		}
+		else
+		{
+			$this->_error = $this->error_msg($resp);
+		}
+		return $this;
+	}
+	
+	/**
+	 * Get the user data.
+	 *
+	 * @access  public
+	 * @return  mixed
+	 */
+	public function result()
+	{
+		// get the result from the session
+		$result = $this->ci->session->userdata('_openid_data');
+		$this->ci->session->unset_userdata('_openid_data');
+		
+		if (is_array($result))
+		{
+			// fetch data out of nested structures
+			foreach ($result as $i => $j)
+			{
+				if (is_array($j))
+				{
+					$result[$i] = ((array_key_exists(0, $j)) ? $j[0] : null);
+				}
+			}
+		}
+		else
+		{
+			return false;
+		}
+		
+		return $result;
 	}
 
 }
 
-
-
-
 /* End of file EasyOpenID.php */
-/* Location: ./system/application/libraries/EasyOpenID.php */
+/* Location: ./system/libraries/EasyOpenID.php */
