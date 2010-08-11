@@ -1,7 +1,7 @@
 h1. EasyOpenID
 
 Author: James Brumond
-Version 0.2.1-b
+Version 0.2.2-b
 
 Copyright 2010 James Brumond
 Dual licensed under MIT and GPL
@@ -11,3 +11,91 @@ h2. Description
 An easy to use OpenID library for CodeIgniter applications.
 
 For full documentation, see the project home page at "http://code.kbjrweb.com/project/easyopenid":http://code.kbjrweb.com/project/easyopenid
+
+h2. Installation
+
+Download the "latest package":http://github.com/kbjr/EasyOpenID/downloads and extract the files. The file @config.php@ needs to be renamed to @openid.php@ and placed in your @./system/application/config@ directory. Then, copy all of the files in the @lib@ directory into your @./system/application/libraries@ directory. That's it, it's installed.
+
+h2. Basic Usage
+
+First things first, you need to load the library. There are two main libraries you can load (@OpenID@ and @EasyOpenID@), but I honestly can't think of any reason to interact directly with the @OpenID@ library. So, load up the library with a call like:
+
+bc. $this->load->library('EasyOpenID');
+
+You are going to need to declare three controller functions (or, depending on how you use the system, more), so you might want to create a completely seperate OpenID controller. Following that model, the following example should explain fairly well how to use the library:
+
+<pre><code><?php
+
+class Openid_auth extend Controller {
+
+	function Openid_auth()
+	{
+		parent::Controller();
+		
+		// load the library
+		$this->load->library('EasyOpenID');
+	}
+	
+	/**
+	 * Starts the authentication proccess
+	 *
+	 * If successful, this function will redirect the page
+	 * to the OpenID provider's authentication page.
+	 */
+	function try_auth()
+	{
+		// assuming that the provider is supplied in a URI segment,
+		// fetch the provider ID.
+		$provider = $this->uri->segment(3);
+		
+		// if we have a provider
+		if ($provider)
+		{
+			$result = $this->easyopenid
+				->provider($provider)                     // what provider you're using
+				->return_to('openid_auth/finish_auth')    // where to redirect after authentication
+				->required('email')                       // what data do we want
+				->make_request();                         // start the authentication process
+			
+			// if an error occured
+			if (is_int($result))
+			{
+				$error = $this->easyopenid->last_error();
+				// handle error...
+			}
+		}
+		else
+		{
+			// error, handle...
+		}
+	}
+	
+	/**
+	 * Completes the authentication proccess
+	 *
+	 * This function collects the data sent back from the
+	 * OpenID provider.
+	 */
+	function finish_auth()
+	{
+		$result = $this->easyopenid
+			->fetch_response()    // collect the provider response
+			->result();           // return the response for processing
+		
+		// if an error occured
+		if (is_int($result))
+		{
+			$error = $this->easyopenid->last_error();
+			// handle error...
+		}
+		else
+		{
+			$user_data = $result;
+			// handle success...
+		}
+	}
+
+}
+
+/* End of file openid_auth.php */
+/* Location: ./system/application/controllers/openid_auth.php */</code></pre>
