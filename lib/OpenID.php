@@ -810,8 +810,8 @@ class OpenID {
 			// if AX
 			if ($response->endpoint->used_yadis)
 			{
-				$ax_resp = new Auth_OpenID_AX_FetchResponse();
-				$data = $ax_resp->fromSuccessResponse($response)->data;
+				$ax_resp = Auth_OpenID_AX_FetchResponse::fromSuccessResponse($response)
+				$data = $ax_resp->data;
 				$new_data = array();
 				foreach ($data as $i => $item)
 				{
