@@ -60,6 +60,7 @@ class Eoid {
 class EasyOpenID extends OpenID {
 	
 	protected $eoid = null;
+	protected $data = false;
 	
 	/**
 	 * Constructor
@@ -401,6 +402,7 @@ class EasyOpenID extends OpenID {
 		if (! is_int($resp))
 		{
 			$this->ci->session->set_userdata('_openid_data', $resp);
+			$this->data = $resp;
 		}
 		else
 		{
@@ -420,6 +422,8 @@ class EasyOpenID extends OpenID {
 		// get the result from the session
 		$result = $this->ci->session->userdata('_openid_data');
 		$this->ci->session->unset_userdata('_openid_data');
+		
+		$result = ($result !== false) ? $result : $this->data;
 		
 		if (is_array($result))
 		{

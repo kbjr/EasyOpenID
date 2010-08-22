@@ -808,9 +808,9 @@ class OpenID {
 		else if ($response->status == Auth_OpenID_SUCCESS)
 		{
 			// if AX
-			if ($response->endpoint->used_yadis)
+			$ax_resp = Auth_OpenID_AX_FetchResponse::fromSuccessResponse($response);
+			if ($response->endpoint->used_yadis && $ax_resp)
 			{
-				$ax_resp = Auth_OpenID_AX_FetchResponse::fromSuccessResponse($response)
 				$data = $ax_resp->data;
 				$new_data = array();
 				foreach ($data as $i => $item)
