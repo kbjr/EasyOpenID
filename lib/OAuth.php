@@ -105,17 +105,21 @@ class OAuth_Facebook {
 		// Make sure this has been initialized
 		if (! $this->app_id || ! $this->secret)
 		{
-			throw new OAuth_Exception
+			throw new OAuth_Exception('OAuth library not yet initialized.');
 		}
+		
 		// Build perms string from array
 		if (is_array($perms))
 		{
 			$perms = implode(',', $perms);
 		}
+		
 		// Make sure we have a valid perms string
 		if (! is_string($perms)) return false;
+		
 		// Build the button markup
 		$button = '<fb:login-button perms="'.$perms.'"></fb:login-button>';
+		
 		// Build the initialization code
 		$init_code = ($needs_sdk) ? $this->javascript_sdk()."\n" : '';
 		$init_code .= implode("\n", array(
@@ -130,6 +134,8 @@ class OAuth_Facebook {
 			'  });',
 			'</script>'
 		));
+		
+		return array( $button, $init_code );
 	}
 	
 }
