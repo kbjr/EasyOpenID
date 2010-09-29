@@ -94,7 +94,11 @@ class OAuth_Facebook {
 	 * to run a facebook authentication sequence.
 	 *
 	 * @access  public
-	 * @param   
+	 * @param   array|string   the required permissions
+	 * @param   string         the javascript statement to run on login
+	 * @param   string         the javascript statement to run on logout
+	 * @param   bool           should the SDK markup be included?
+	 * @return  array [ button, javascript ]
 	 */
 	public function create_connect_button($perms = '', $on_login = null, $on_logout = null, $needs_sdk = true)
 	{
