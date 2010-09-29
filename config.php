@@ -40,6 +40,20 @@ $config['associations_table'] = 'oid_associations';
 */
 $config['nonces_table'] = 'oid_nonces';
 
+/*
+|--------------------------------------------------------------------------
+| Facebook App ID / Secret
+|--------------------------------------------------------------------------
+|
+| If using the Facebook Connect portion of the OAuth library, use this app
+| ID automatically (no init needed)
+|
+*/
+$config['facebook_connect'] = array(
+	'app_id' => null,
+	'secret' => null
+);
+
 
 /* End of file openid.php */
 /* Location: ./system/application/config/openid.php */

@@ -29,19 +29,39 @@
  * @link		http://code.kbjrweb.com/project/easyopenid
  */
 
+$CI = &function() {
+	return get_instance();
+};
+$OAuth = &function() {
+	return OAuth::get_instance();
+}
+
 class OAuth {
+
+	protected static $instance;
+	protected static $config;
+	public static function get_instance()
+	{
+		if (! self::$instance) new self();
+		return self::$instance;
+	}
 
 	public function __construct()
 	{
+		self::$instance =& $this;
 		$this->facebook = new OAuth_Facebook();
 		$this->twitter  = new OAuth_Twitter();
+	}
+	
+	public function read_config($item)
+	{
+		return $CI()->config->item($item, 'openid');
 	}
 	
 	public $facebook;
 	public $twitter;
 
 }
-
 
 /**
  * Does facebook authentication
@@ -54,7 +74,11 @@ class OAuth_Facebook {
 	
 	public function __construct()
 	{
-		
+		$config = $OAuth()->read_config('facebook_connect');
+		if (isset($config['app_id']) && is_string($config['app_id']) &&
+		isset($config['secret'] && is_string($config['secret'])) {
+			$this->initialize($config['app_id'], $config['secret']);
+		}
 	}
 	
 	// Application info
@@ -136,6 +160,18 @@ class OAuth_Facebook {
 		));
 		
 		return array( $button, $init_code );
+	}
+	
+	/**
+	 * Gets the facebook data gathered by user login
+	 *
+	 * @access  public
+	 * @param   bool      return as an array?
+	 * @return  object|array
+	 */
+	public function get_data($array = false)
+	{
+		
 	}
 	
 }
