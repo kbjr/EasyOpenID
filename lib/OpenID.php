@@ -70,7 +70,7 @@ define('OPENID_RETURN_FAILURE', 50);
  * @author		James Brumond
  * @link		http://code.kbjrweb.com/project/easyopenid
  */
-class OpenID {
+class Openid {
 
 /*
  * Statics

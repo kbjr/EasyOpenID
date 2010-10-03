@@ -42,16 +42,17 @@ $config['nonces_table'] = 'oid_nonces';
 
 /*
 |--------------------------------------------------------------------------
-| Facebook App ID / Secret
+| Facebook Connect Data
 |--------------------------------------------------------------------------
 |
 | If using the Facebook Connect portion of the OAuth library, use this app
-| ID automatically (no init needed)
+| ID/config automatically (no init needed).
 |
 */
 $config['facebook_connect'] = array(
 	'app_id' => null,
-	'secret' => null
+	'secret' => null,
+	'cookie' => true
 );
 
 
