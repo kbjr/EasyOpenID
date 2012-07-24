@@ -26,7 +26,7 @@ You are going to need to declare three controller functions (or, depending on ho
 
 <pre><code><?php
 
-class Openid_auth extends Controller {
+class Openid_auth extends CI_Controller {
 
 	function Openid_auth()
 	{
