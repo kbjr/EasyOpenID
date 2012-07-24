@@ -9,7 +9,7 @@ Dual licensed under MIT and GPL
 h2. NOTICE
 
 _(24 July, 2012)_
-This library is no longer being maintained. I would be happy to hand over it's maintenance to someone else if they would like to continue the project, but I will not be making any updates.
+This library is no longer being maintained. I would be happy to hand over it's maintenance to someone else if they would like to continue the project, but I will not be making any updates. If you are interested, feel free to open an issue so we can discuss.
 
 h2. Description
 
