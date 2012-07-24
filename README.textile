@@ -28,12 +28,10 @@ You are going to need to declare three controller functions (or, depending on ho
 
 class Openid_auth extends Controller {
 
-	function Openid_auth()
-	{
-		parent::Controller();
-		
-		// load the library
-		$this->load->library('EasyOpenID');
+	public function __construct() {
+        	parent::__construct();
+        	// load the library
+        	$this->load->library('EasyOpenID');
 	}
 	
 	/**
